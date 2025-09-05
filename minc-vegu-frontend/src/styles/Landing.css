@@ -12,13 +12,13 @@
   border-radius: 28px;
   border: 3px solid #ff6e40;
   box-shadow: 0 12px 40px rgba(0,0,0,0.08);
-  padding: 36px 28px 28px;
+  padding: 36px 0px 28px;
   text-align: center;
 }
 
 .landing-logo {
-  width: 180px;
-  max-width: 60%;
+  width: 700px;
+  max-width: 80%;
   margin: 8px auto 6px;
   display: block;
   filter: drop-shadow(0 4px 10px rgba(0,0,0,.15));
@@ -40,7 +40,7 @@
 
 .btn-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
   margin: 0 auto 8px;
   max-width: 600px;
@@ -51,8 +51,9 @@
   padding: 12px 18px;
   border-radius: 12px;
   text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
   border: 2px solid transparent;
   transition: transform .06s ease, box-shadow .12s ease, background .12s ease;
   text-align: center;
@@ -60,9 +61,9 @@
 }
 
 .btn-primary {
-  background: #ffd544;
-  color: #0f3b2e;
-  border-color: #eab308;
+  background: #F5EE1F;
+  color: #1B5228;
+  border-color: #F1663D;
   box-shadow: 0 6px 16px rgba(234,179,8,.25);
 }
 

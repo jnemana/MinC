@@ -1,27 +1,19 @@
-import React from "react";
-import "./styles/Landing.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MinCLandingPage from "./pages/MinCLandingPage";
+import MinCLoginPage from "./pages/MinCLoginPage";
+import MinCRegisterPage from "./pages/MinCRegisterPage";
+import MinCContactSupportPage from "./pages/MinCContactSupportPage";
 
 function App() {
   return (
-    <div className="landing-wrap">
-      <div className="landing-card">
-        {/* Use your MinC logo here */}
-        <img src="/minc-logo.png" alt="MinC Logo" className="landing-logo" />
-
-        <h1 className="landing-title">MinC</h1>
-        <p className="landing-subtitle">
-          Administrative & Business Control Panel
-        </p>
-
-        <div className="btn-row">
-          <a href="/login" className="btn btn-primary">Login</a>
-          <a href="/register" className="btn btn-secondary">Register</a>
-          <a href="/contact" className="btn btn-ghost">Contact</a>
-        </div>
-
-        <p className="powered">Powered by Mihir Mobile Solutions</p>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<MinCLandingPage />} />
+        <Route path="/login" element={<MinCLoginPage />} />
+        <Route path="/register" element={<MinCRegisterPage />} />
+        <Route path="/contact" element={<MinCContactSupportPage />} />
+      </Routes>
+    </Router>
   );
 }
 

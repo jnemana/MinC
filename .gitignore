@@ -6,6 +6,7 @@ MinC Req.txt
 jCreateBcryptHash.py
 Logo
 .DS_Store
+TEMP-SAVE/
 
 # Node / Vite
 node_modules/
@@ -24,4 +25,4 @@ local.settings.json
 .DS_Store
 .env
 .env.*
-
+minc-vegu-frontend/public/minc-logo.png
