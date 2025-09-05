@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+local.settings.json
+.DS_Store
+000 J.txt
+20250904 MinC Discussion.docx
+20250904 MinC User Creation.docx
+MinC Req.txt
+jCreateBcryptHash.py
