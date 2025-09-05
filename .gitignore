@@ -1,11 +1,4 @@
-node_modules/
-dist/
-build/
-__pycache__/
-*.pyc
-.venv/
-local.settings.json
-.DS_Store
+.DS_Store\nnode_modules/\ndist/\nbuild/\n__pycache__/\n*.pyc\n.venv/\nlocal.settings.json
 000 J.txt
 20250904 MinC Discussion.docx
 20250904 MinC User Creation.docx
