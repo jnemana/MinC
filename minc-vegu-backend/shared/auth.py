@@ -9,6 +9,13 @@ import azure.functions as func
 MINC_RE  = re.compile(r"^MM\d{2}[A-Z]\d{5}$", re.IGNORECASE)
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
+# --- Config (env-overridable) ---
+def _int(val, default):
+    try:
+        return int(val)
+    except Exception:
+        return default
+
 # === Config (env overridable) ===
 MAX_ATTEMPTS   = int(os.getenv("MINC_MAX_ATTEMPTS", 3))
 LOCKOUT_HOURS  = int(os.getenv("MINC_LOCKOUT_HOURS", 24))
@@ -49,26 +56,30 @@ def _get_str(user: dict, *keys: str):
             return v
     return None
 
+# --- Account state helpers (camelCase fields) ---
+def account_status(user: dict) -> str:
+    return (user.get("status") or "active").lower()
 
-def is_locked(user: dict) -> tuple[bool, str | None]:
-    """
-    Consider an account locked if:
-      - status is explicitly 'locked', OR
-      - lockoutUntil exists and is in the future.
-    Return (locked?, lockoutUntil|None).
-    """
-    status = (user.get("status") or "").lower().strip()
-    if status == "locked":
-        return True, user.get("lockoutUntil")
-
+def lock_expired(user: dict) -> bool:
+    """True if user is locked but lockoutUntil is in the past."""
     until = user.get("lockoutUntil")
     if not until:
-        return False, None
+        return False
     try:
         dt = datetime.fromisoformat(until.replace("Z", "+00:00"))
     except Exception:
-        return False, None
-    return (dt > datetime.now(timezone.utc)), until
+        return False
+    return datetime.now(timezone.utc) >= dt
+
+
+def is_locked(user: dict):
+    """
+    Returns (locked: bool, lockout_until_iso: str|None).
+    This is a pure check; no mutation.
+    """
+    if account_status(user) != "locked":
+        return (False, None)
+    return (True, user.get("lockoutUntil"))
 
 def attempts_left(user: dict) -> int:
     return max(0, MAX_ATTEMPTS - int(user.get("failedLoginCount", 0)))
@@ -76,9 +87,10 @@ def attempts_left(user: dict) -> int:
 def mark_failure(user: dict) -> dict:
     fails = int(user.get("failedLoginCount", 0)) + 1
     user["failedLoginCount"] = fails
-    # Do not set status here; caller decides after increment.
     if fails >= MAX_ATTEMPTS:
+        user["status"] = "locked"
         user["lockoutUntil"] = (datetime.now(timezone.utc) + timedelta(hours=LOCKOUT_HOURS)).isoformat()
+    user["lastFailedAt"] = datetime.now(timezone.utc).isoformat()
     return user
 
 def reset_failures(user: dict) -> dict:

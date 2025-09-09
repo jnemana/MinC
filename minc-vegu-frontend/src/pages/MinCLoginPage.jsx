@@ -96,13 +96,18 @@ const formatLockoutLocal = (iso) => {
       });
 
       if (res.status === 404) { setError("MinC user not found."); return; }
-  if (res.status === 403) {
-    const j = await readErr(res);
-    const lu = j.lockoutUntil ?? j.lockout_until;
-    const until = lu ? ` until ${formatLockoutLocal(lu)}` : "";
+
+      if (res.status === 403) {
+  const j = await readErr(res);
+  const reason = (j.reason || "").toLowerCase();
+  if (reason === "locked" || j.lockoutUntil) {
+    const until = j.lockoutUntil ? ` until ${formatLockoutLocal(j.lockoutUntil)}` : "";
     setError(`Account locked${until}`);
-    return;
+  } else {
+    setError(j.error || "Account is not active. Contact MinC Support.");
   }
+  return;
+}
 
       if (!res.ok) {
         const j = await readErr(res);
@@ -153,25 +158,28 @@ const formatLockoutLocal = (iso) => {
 
 if (res.status === 403) {
   const j = await readErr(res);
-  const lu = j.lockoutUntil ?? j.lockout_until;
-  const until = lu ? ` until ${formatLockoutLocal(lu)}` : "";
-  setError(`Account locked${until}`);
-  setStep(1);
+  const reason = (j.reason || "").toLowerCase();
+  if (reason === "locked" || j.lockoutUntil) {
+    const until = j.lockoutUntil ? ` until ${formatLockoutLocal(j.lockoutUntil)}` : "";
+    setError(`Account locked${until}`);
+    setStep(1);
+  } else {
+    setError(j.error || "Account is not active. Contact MinC Support.");
+    setStep(1); // or keep at step 1 already
+  }
   return;
 }
 
-      if (res.status === 401) {
-        const j = await readErr(res);
-        const left = (typeof j.attemptsLeft === "number")
-          ? j.attemptsLeft
-          : (typeof j.attempts_left === "number" ? j.attempts_left : undefined);
-        if (typeof left === "number") {
-          setError(`Incorrect password. You have ${left} more attempt${left === 1 ? "" : "s"} before lockout.`);
-        } else {
-          setError(j.error || "Incorrect password.");
-        }
-        return;
-      }
+if (res.status === 401) {
+  const j = await readErr(res);
+  const left = typeof j.attemptsLeft === "number" ? j.attemptsLeft : j.attempts_left;
+  if (typeof left === "number") {
+    setError(`Incorrect password. You have ${left} more attempt${left === 1 ? "" : "s"} before lockout.`);
+  } else {
+    setError(j.error || "Incorrect password.");
+  }
+  return;
+}
 
       if (res.status === 404) { setError("MinC user not found."); return; }
       if (!res.ok) {
@@ -239,7 +247,7 @@ if (res.status === 403) {
               autoFocus
             />
             <button className="btn btn-primary btn-xl" disabled={loading}>
-              {loading ? "Verifying..." : "NEXT"}
+              {loading ? "Verifying..." : "Continue"}
             </button>
             <div style={{ textAlign: "center", marginTop: 10 }}>
               <Link to="/login" className="link-underline">Use a different account</Link>

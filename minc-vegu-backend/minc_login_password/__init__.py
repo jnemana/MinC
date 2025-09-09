@@ -13,9 +13,12 @@ from shared.auth import (
     reset_failures,
     attempts_left,
     is_locked,
+    account_status,
+    lock_expired,
     MAX_ATTEMPTS,
     LOCKOUT_HOURS,
 )
+
 from shared.cosmos_client import users_container
 
 def _json(obj, status=200):
@@ -57,47 +60,54 @@ def run(req: func.HttpRequest) -> func.HttpResponse:
 
         user = items[0]
 
-        # If already locked, short-circuit
-        locked, until_iso = is_locked(user)
-        if locked:
-            return _json({"error": "Account locked", "lockout_until": until_iso}, 403)
+         # 1) Locked? auto-unlock if expired, else block
+        if account_status(user) == "locked":
+            if lock_expired(user):
+                reset_failures(user)
+                user["status"] = "active"
+                note = f'[{datetime.now(timezone.utc).isoformat()}] Auto-unlock at password step after lockout expiry.'
+                user["adminNotes"] = ((user.get("adminNotes") or "") + ("\n" if user.get("adminNotes") else "") + note)
+                cont.replace_item(user, user)
+            else:
+                _, until_iso = is_locked(user)
+                return _json({"error": "Account locked", "lockoutUntil": until_iso, "reason": "locked"}, 403)
 
-        # Verify password
-        ok = verify_password(password, user)
-        if not ok:
-            # increment first
+        # 2) Only allow active accounts
+        if account_status(user) != "active":
+            return _json({"error": f"Account  is not active. Contact MinC support.", "reason": "not_active"}, 403)
+
+        # 3) Verify password
+        if not verify_password(password, user):
             user = mark_failure(user)
-
-            # if newly locked NOW (3rd strike), set status + admin note
             fails = int(user.get("failedLoginCount", 0))
             if fails >= MAX_ATTEMPTS:
-                user["status"] = "locked"
-                now_utc = datetime.now(timezone.utc)
+                # newly locked
                 until_iso = user.get("lockoutUntil")
-                # append admin note
-                note = f"[{now_utc.isoformat()}] Account auto-locked after {fails} failed attempts. LockoutUntil={until_iso}"
-                if user.get("adminNotes"):
-                    user["adminNotes"] = (user["adminNotes"] + "\n" + note).strip()
-                else:
-                    user["adminNotes"] = note
-
+                user["status"] = "locked"
+                note = f'[{datetime.now(timezone.utc).isoformat()}] Account auto-locked after {fails} failed attempts. lockoutUntil={until_iso}'
+                user["adminNotes"] = ((user.get("adminNotes") or "") + ("\n" if user.get("adminNotes") else "") + note)
                 cont.replace_item(user, user)
-                return _json({"error": "Account locked", "lockoutUntil": until_iso}, 403)
+                return _json({"error": "Account locked", "lockoutUntil": until_iso, "reason": "locked"}, 403)
 
-            # still not locked: tell remaining attempts (after increment)
             cont.replace_item(user, user)
-            remaining = attempts_left(user)  # this uses MAX_ATTEMPTS - fails
-            return _json({"error": "Incorrect password.", "attemptsLeft": remaining}, 401)
+            remaining = attempts_left(user)
+            # return both keys for FE compatibility
+            return _json(
+                {"error": "Incorrect password.", "attemptsLeft": remaining, "attempts_left": remaining},
+                401
+            )
 
-        # Password OK — reset failures, (re)activate if needed
+        # 4) Success — clear failures; ensure status active
         reset_failures(user)
-        if (user.get("status") or "").lower() == "locked":
-            # if lock has expired, unlock; otherwise still locked (handled earlier)
-            user["status"] = "active"
+        user["status"] = "active"
+        user["lastLoginAt"] = datetime.now(timezone.utc).isoformat()
         cont.replace_item(user, user)
 
-        # success payload (add what you need for FE session)
-        return _json({"success": True, "mincId": user.get("mincId"), "email": user.get("email")}, 200)
+        return _json({
+            "success": True,
+            "mincId": user.get("mincId"),
+            "email": user.get("email"),
+        }, 200)
 
     except Exception:
         logging.exception("minc-login-password failed")
