@@ -87,3 +87,67 @@
   color: #416a57;
   opacity: 0.9;
 }
+
+/* --- Login form polish --- */
+.card-narrow {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+  margin-top: 8px;
+}
+
+/* make inputs fit inside the card without overflow */
+.input {
+  width: 100%;
+  box-sizing: border-box;      /* << key fix */
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #d1d5db;
+  background: #fff;
+  font-size: 16px;
+  outline: none;
+}
+.input:focus {
+  border-color: #0f3b2e;
+  box-shadow: 0 0 0 3px rgba(15,59,46,.12);
+}
+
+.label {
+  font-weight: 700;
+  color: #0f3b2e;
+  margin: 4px 2px 2px;
+}
+
+.alert-error {
+  color: #b91c1c;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.alert-info {
+  color: #166534;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* buttons on forms */
+.btn-full {
+  width: 100%;
+}
+.link-ghost {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 2px solid #0f3b2e;
+  border-radius: 12px;
+  color: #0f3b2e;
+  background: #fff;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 700;
+}
+
+

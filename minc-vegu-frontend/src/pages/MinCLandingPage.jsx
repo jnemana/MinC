@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/Landing.css";
+import "../styles/MinCGlobal.css";
 import mincLogo from '../assets/minc-logo.png';
 
 function MinCLandingPage() {
@@ -16,6 +16,7 @@ function MinCLandingPage() {
         </div>
       </div>
     </div>
+    
   );
 }
 
