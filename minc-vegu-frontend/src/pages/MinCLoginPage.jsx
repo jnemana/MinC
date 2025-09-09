@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/MinCGlobal.css";
 import { CONFIG } from "../utils/config";
+import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
+
 
 // Local validators (match BE)
 const MINC_RE = /^(MM\d{2}[A-Z]\d{5})$/i;
@@ -34,6 +36,10 @@ export default function MinCLoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [user, setUser] = useState(null);
   const [password, setPassword] = useState("");
+
+    useEffect(() => {
+    document.title = "MinC Portal Login";
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("mincRememberedIdentifier");
@@ -199,6 +205,8 @@ if (res.status === 401) {
   };
 
   return (
+<>
+<MinCSpinnerOverlay open={loading} />
     <div className="page-wrap">
       <div className="auth-card">
         <h1 className="auth-title">MinC Portal Login</h1>
@@ -260,5 +268,6 @@ if (res.status === 401) {
         </div>
       </div>
     </div>
+  </>
   );
 }
