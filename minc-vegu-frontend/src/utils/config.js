@@ -21,7 +21,7 @@ export const CONFIG = {
   PATHS: {
     INIT: "/api/minc-login-init",
     PASS: "/api/minc-login-password",
-    OTP_SEND: "/api/send-email-otp",
-    OTP_VERIFY: "/api/verify-email-otp",
+    OTP_SEND: "/api/minc-send-email-otp",
+    OTP_VERIFY: "/api/minc-verify-email-otp",
   }
 };
