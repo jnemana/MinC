@@ -6,13 +6,14 @@ from python_http_client import exceptions as sg_exc
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Email
 from .cosmos_client import get_container, users_container
 
 COSMOS_DB = os.getenv("COSMOS_DB", "minc")
 OTP_CONTAINER = os.getenv("MINC_OTP_CONTAINER", "minc_otp_log")  # <-- you named it this
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 OTP_FROM_EMAIL = os.getenv("OTP_FROM_EMAIL", "otp@mihirmobile.com")
+OTP_FROM_NAME  = os.getenv("OTP_FROM_NAME", "MinC OTP Service")
 
 # Optional fixed OTP for local/dev (leave empty in prod)
 FIXED_OTP = os.getenv("MINC_OTP_FIXED", "")
@@ -68,7 +69,7 @@ def send_email_otp(email: str, context: str = "minc_login") -> tuple[bool, str |
             return (False, "SENDGRID_API_KEY not set.")
 
         msg = Mail(
-            from_email=OTP_FROM_EMAIL,
+            from_email=Email(OTP_FROM_EMAIL, OTP_FROM_NAME),
             to_emails=email,
             subject="Your MinC Email OTP",
             plain_text_content=(
