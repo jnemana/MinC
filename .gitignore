@@ -4,3 +4,30 @@
 20250904 MinC User Creation.docx
 MinC Req.txt
 jCreateBcryptHash.py
+Logo
+.DS_Store
+TEMP-SAVE/
+
+# Node / Vite
+node_modules/
+dist/
+build/
+.vite/
+*.log
+
+# Python / Azure Functions
+.venv/
+__pycache__/
+*.pyc
+local.settings.json
+
+# OS / env
+.DS_Store
+.env
+.env.*
+minc-vegu-frontend/public/minc-logo.png
+minc-vegu-backend/.vscode/launch.json
+minc-vegu-backend/.vscode/settings.json
+minc-vegu-backend/.vscode/tasks.json
+minc-vegu-frontend/.env*
+minc-vegu-frontend/src/utils/config.js

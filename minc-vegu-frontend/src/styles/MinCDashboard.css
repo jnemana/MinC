@@ -1,0 +1,87 @@
+/* Page shell */
+.minc-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1rem;
+  background: linear-gradient(#fafafa, #f3f4f6);
+}
+
+/* Title */
+.minc-title {
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  text-align: center;
+  font-family: "Orbitron", sans-serif;
+}
+
+/* Grid for the two brands */
+.minc-brand-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  width: min(980px, 100%);
+  margin-inline: auto;
+}
+
+/* Card */
+.minc-brand-card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #e8f2ea;
+  box-shadow: 0 4px 16px rgba(0,0,0,.07);
+  cursor: pointer;
+  user-select: none;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.minc-brand-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.10);
+}
+
+/* The logo itself — the important part */
+.minc-brand-logo {
+  width: 300px;          /* hard max visual size */
+  height: 200px;         /* square container */
+  object-fit: contain;   /* keep aspect ratio, no cropping */
+  display: block;
+}
+
+/* Label under each logo */
+.minc-brand-label {
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+/* Simple modal */
+.minc-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: grid; place-items: center;
+  z-index: 1000;
+}
+.minc-modal {
+  background: #fff;
+  width: min(92vw, 420px);
+  border-radius: 14px;
+  padding: 1.25rem 1.25rem 1rem;
+  box-shadow: 0 14px 48px rgba(0,0,0,.18);
+  text-align: center;
+}
+.minc-modal h3 { margin: 0 0 .5rem; font-size: 1.125rem; }
+.minc-modal p  { margin: 0 0 1rem; color: #4b5563; }
+.minc-modal button {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  padding: .6rem 1rem;
+  background: #facc15;     /* amber-400 */
+  font-weight: 600;
+  cursor: pointer;
+}
+.minc-modal button:hover { background: #eab308; }  /* amber-500 */

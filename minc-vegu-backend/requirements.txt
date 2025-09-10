@@ -1,0 +1,17 @@
+# Azure Functions Python SDK
+azure-functions
+
+# Cosmos DB SDK (required for Cosmos interactions)
+azure-cosmos>=4.0.0
+
+# SendGrid email sending
+sendgrid==6.10.0
+
+# Optional: logging helper or any other libs you might be using
+pytz
+
+bcrypt==4.1.2
+
+boto3==1.34.0
+
+openai>=1.0.0
