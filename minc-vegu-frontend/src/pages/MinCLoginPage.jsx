@@ -283,7 +283,7 @@ const handleSubmitPassword = async (e) => {
 
       // Success — keep the minimal session (same as before)
       sessionStorage.setItem("mincUser", JSON.stringify(user));
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("[MinC] OTP verify error", err);
       setError("Error verifying OTP.");
