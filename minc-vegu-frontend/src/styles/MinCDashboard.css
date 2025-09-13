@@ -85,3 +85,74 @@
   cursor: pointer;
 }
 .minc-modal button:hover { background: #eab308; }  /* amber-500 */
+
+/* Dashboard main wrapper card */
+.minc-dashboard-card {
+  background: #f6fff8; /* light brand background */
+  border: 3px solid #F1663D; /* brand orange */
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  padding: 2rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* Title override: brand dark green */
+.minc-title {
+  font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+  font-weight: 700;
+  margin-bottom: 1.75rem;
+  text-align: center;
+  font-family: "Orbitron", sans-serif;
+  color: #1B5228; /* brand dark green */
+}
+
+/* Keep brand grid horizontal */
+.minc-brand-grid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* --- Modal (harmonized) --- */
+.minc-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: grid; place-items: center;
+  z-index: 1000;
+}
+
+.minc-modal {
+  background: #f6fff8;                 /* same as cards */
+  border: 3px solid #F1663D;           /* brand orange */
+  border-radius: 20px;
+  box-shadow: 0 18px 60px rgba(0,0,0,.18);
+  width: min(92vw, 480px);
+  padding: 1.25rem 1.25rem 1rem;
+  text-align: center;
+}
+
+.minc-modal-title {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.1rem, 1.6vw + .6rem, 1.4rem);
+  color: #1B5228;                      /* brand dark green */
+  font-family: "Orbitron", sans-serif; /* brand heading font */
+}
+
+.minc-modal-text {
+  margin: 0 0 1rem;
+  color: #234a39;
+  opacity: .95;
+}
+
+.minc-modal-actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* optional: stronger focus ring on the primary button inside modal */
+.minc-modal .btn:focus-visible {
+  outline: 3px solid rgba(27,82,40,.55);
+  outline-offset: 2px;
+}

@@ -315,23 +315,34 @@ const handleSubmitPassword = async (e) => {
           <h1 className="auth-title">MinC Portal Login</h1>
           <p className="auth-sub">Sign in with your MINC ID (no spaces) or Email*</p>
 
-          {error && <div className="alert-error">{error}</div>}
+          {error && (
+            <div className="alert-error" role="alert" aria-live="assertive" id="login-error">
+              {error}
+            </div>
+          )}
 
           {step === 1 && (
             <form className="auth-form" onSubmit={handleSubmitIdentifier}>
-              <label className="label-lg">User ID*</label>
+              <label className="label-lg" htmlFor="login-identifier">User ID*</label>
               <input
+                id="login-identifier"
+                name="identifier"
                 className="input-lg"
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
                 autoFocus
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-describedby={error ? "login-error" : undefined}
               />
 
               <div className="row-between" style={{ marginTop: 4 }}>
-                <label className="remember">
+                <label className="remember" htmlFor="remember-me">
                   <input
+                    id="remember-me"
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
@@ -352,8 +363,10 @@ const handleSubmitPassword = async (e) => {
 
           {step === 2 && (
             <form className="auth-form" onSubmit={handleSubmitPassword}>
-              <label className="label-lg">Password*</label>
+              <label className="label-lg" htmlFor="login-password">Password*</label>
               <input
+                id="login-password"
+                name="password"
                 className="input-lg"
                 type="password"
                 value={password}
@@ -361,6 +374,8 @@ const handleSubmitPassword = async (e) => {
                 required
                 placeholder="Your password"
                 autoFocus
+                autoComplete="current-password"
+                aria-describedby={error ? "login-error" : undefined}
               />
               <button className="btn btn-primary btn-xl" disabled={loading}>
                 {loading ? "Verifying..." : "NEXT"}
@@ -380,14 +395,23 @@ const handleSubmitPassword = async (e) => {
                 Enter the 5-digit OTP sent to <b>{user?.email}</b>
               </div>
               <input
+                id="login-otp"
+                name="otp"
                 className="input-lg"
                 type="text"
                 maxLength={5}
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={(e) => {
+                  const v = (e.target.value || "").replace(/[^0-9]/g, "").slice(0, 5);
+                  setOtp(v);
+                }}
                 required
                 placeholder="Email OTP"
                 autoFocus
+                inputMode="numeric"
+                pattern="[0-9]{5}"
+                autoComplete="one-time-code"
+                aria-describedby={error ? "login-error" : undefined}
               />
               <div style={{ textAlign: "right", fontSize: 12, marginTop: 4 }}>
                 {otp.length}/5
