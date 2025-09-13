@@ -33,7 +33,7 @@
   gap: 0.75rem;
   padding: 1rem;
   border-radius: 14px;
-  background: #e8f2ea;
+  background: #fff;
   box-shadow: 0 4px 16px rgba(0,0,0,.07);
   cursor: pointer;
   user-select: none;
@@ -50,6 +50,7 @@
   height: 200px;         /* square container */
   object-fit: contain;   /* keep aspect ratio, no cropping */
   display: block;
+  
 }
 
 /* Label under each logo */
@@ -174,4 +175,102 @@
   font-size: 0.9rem;
   color: #666;
   margin-top: 4px;
+}
+
+/* --- Logout control (top-right) --- */
+.minc-logout-container {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.minc-logout-button {
+  font-size: 1.6rem;
+  color: #F1663D; /* brand orange */
+  display: block;
+  margin: 0 auto;
+}
+
+.minc-logout-label {
+  font-size: 0.72rem;
+  color: grey;
+  margin-top: 2px;
+  font-family: "Exo 2", sans-serif;
+}
+
+.minc-logout-container:focus {
+  outline: 2px solid rgba(241, 102, 61, 0.6);
+  outline-offset: 2px;
+}
+
+/* Logout button styles */
+.minc-dashboard-card {
+  background: #E8F5E9;
+  border-radius: 36px;
+  padding: 2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  border: 3px solid #F1663D;
+  position: relative;   /* 👈 NEW: makes logout-container anchor inside */
+  text-align: center;
+}
+
+/* Logout button styles (unchanged, but now anchored correctly) */
+.logout-container {
+  position: absolute;
+  top: 15px;
+  right: 25px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.logout-button {
+  font-size: 1.8rem;
+  color: #F1663D;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+}
+
+.logout-label {
+  font-size: 0.7rem;
+  color: grey;
+  margin-top: 2px;
+}
+
+/* Modal actions */
+.minc-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;   /* 👈 space between buttons */
+  margin-top: 1.5rem;
+}
+
+/* Button base style */
+.minc-modal-actions .btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: 'Exo2', sans-serif;
+  border: none;
+}
+
+/* Danger button (Logout) */
+.minc-modal-actions .btn-danger {
+  background-color: #F1663D;
+  color: white;
+}
+
+/* Secondary button (Cancel) */
+.minc-modal-actions .btn-secondary {
+  background-color: #F5EE1F;
+  color: #1B5228;
 }

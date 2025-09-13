@@ -196,6 +196,7 @@ img { max-width: 100%; display: block; }
   border-radius: 24px;
   background: #f6fff8;
   box-shadow: 0 18px 60px rgba(0,0,0,.10);
+  position: relative;
 }
 
 .auth-title {
@@ -315,4 +316,36 @@ img { max-width: 100%; display: block; }
 .input, .remember, button, .link-underline {
   font-family: "Exo 2", sans-serif;
   font-size: 18px;
+}
+
+/* Back button container */
+.minc-back-container {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.minc-back-icon {
+  font-size: 1.5rem;
+  color: #F1663D;   /* red */
+}
+
+.minc-back-label {
+  font-size: 0.7rem;
+  color: grey;
+  margin-top: 2px;
+}
+
+/* 🔑 Add padding-top to auth-card so content clears the back button */
+.auth-card {
+  position: relative;
+  padding-top: 60px;   /* gives space under Back button */
 }

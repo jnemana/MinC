@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa"; 
 import "../styles/MinCGlobal.css";
 import { CONFIG } from "../utils/config";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
@@ -326,6 +327,20 @@ const handleSubmitPassword = async (e) => {
 
       <div className="page-wrap">
         <div className="auth-card">
+
+          {/* 🔴 Back Button (Top-left inside card) */}
+          <div
+            className="minc-back-container"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate("/")}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/")}
+            aria-label="Back to Landing"
+          >
+            <FaArrowLeft className="minc-back-icon" />
+            <div className="minc-back-label">Back</div>
+          </div>
+
           <h1 className="auth-title">MinC Portal Login</h1>
           <p className="auth-sub">Sign in with your MINC ID (no spaces) or Email*</p>
 
@@ -450,11 +465,7 @@ const handleSubmitPassword = async (e) => {
             </form>
           )}
 
-          <div style={{ textAlign: "center", marginTop: 14 }}>
-            <Link to="/" className="link-ghost">
-              Back to Landing
-            </Link>
-          </div>
+
         </div>
       </div>
     </>
