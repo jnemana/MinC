@@ -1,4 +1,5 @@
-// src/pages/MinCLoginPage.jsx
+// src/pages/MinCLoginPage.jsx v1.1
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/MinCGlobal.css";
@@ -115,9 +116,15 @@ export default function MinCLoginPage() {
       if (res.status === 404) { setError("MinC user not found."); return; }
       if (res.status === 403) {
         const j = await readErr(res);
-        const untilIso = j.lockoutUntil || j.lockout_until;
-        const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
-        setError(`Account locked${until}`);
+        const reason = (j.reason || "").toLowerCase();
+        if (reason === "locked") {
+          const untilIso = j.lockoutUntil || j.lockout_until;
+          const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
+          setError(`Account locked${until}`);
+        } else {
+          // show server-provided text or our standard copy
+          setError(j.error || "Account is not active. Contact MinC support.");
+        }
         return;
       }
       if (!res.ok) {
@@ -177,9 +184,14 @@ const handleSubmitPassword = async (e) => {
     // handle known statuses
     if (res.status === 403) {
       const j = await readErr(res);
-      const untilIso = j.lockoutUntil || j.lockout_until;
-      const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
-      setError(`Account locked${until}`);
+      const reason = (j.reason || "").toLowerCase();
+      if (reason === "locked") {
+        const untilIso = j.lockoutUntil || j.lockout_until;
+        const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
+        setError(`Account locked${until}`);
+      } else {
+        setError(j.error || "Account is not active. Contact MinC support.");
+      }
       setStep(1);
       return;
     }
