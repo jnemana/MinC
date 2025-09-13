@@ -1,6 +1,8 @@
-// src/pages/MinCLoginPage.jsx
+// src/pages/MinCLoginPage.jsx v1.1
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa"; 
 import "../styles/MinCGlobal.css";
 import { CONFIG } from "../utils/config";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
@@ -115,9 +117,15 @@ export default function MinCLoginPage() {
       if (res.status === 404) { setError("MinC user not found."); return; }
       if (res.status === 403) {
         const j = await readErr(res);
-        const untilIso = j.lockoutUntil || j.lockout_until;
-        const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
-        setError(`Account locked${until}`);
+        const reason = (j.reason || "").toLowerCase();
+        if (reason === "locked") {
+          const untilIso = j.lockoutUntil || j.lockout_until;
+          const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
+          setError(`Account locked${until}`);
+        } else {
+          // show server-provided text or our standard copy
+          setError(j.error || "Account is not active. Contact MinC support.");
+        }
         return;
       }
       if (!res.ok) {
@@ -130,6 +138,8 @@ export default function MinCLoginPage() {
       setUser({
         mincId: data.mincId,
         email: data.email,
+        displayName: data.displayName,
+        roles: Array.isArray(data.roles) ? data.roles : [],
         failedAttempts: data.failedLoginCount ?? 0,
         lockoutUntil: data.lockoutUntil ?? null,
       });
@@ -177,9 +187,14 @@ const handleSubmitPassword = async (e) => {
     // handle known statuses
     if (res.status === 403) {
       const j = await readErr(res);
-      const untilIso = j.lockoutUntil || j.lockout_until;
-      const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
-      setError(`Account locked${until}`);
+      const reason = (j.reason || "").toLowerCase();
+      if (reason === "locked") {
+        const untilIso = j.lockoutUntil || j.lockout_until;
+        const until = untilIso ? ` until ${formatLockoutLocal(untilIso)}` : "";
+        setError(`Account locked${until}`);
+      } else {
+        setError(j.error || "Account is not active. Contact MinC support.");
+      }
       setStep(1);
       return;
     }
@@ -269,7 +284,7 @@ const handleSubmitPassword = async (e) => {
 
       // Success — keep the minimal session (same as before)
       sessionStorage.setItem("mincUser", JSON.stringify(user));
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       console.error("[MinC] OTP verify error", err);
       setError("Error verifying OTP.");
@@ -312,6 +327,20 @@ const handleSubmitPassword = async (e) => {
 
       <div className="page-wrap">
         <div className="auth-card">
+
+          {/* 🔴 Back Button (Top-left inside card) */}
+          <div
+            className="minc-back-container"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate("/")}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/")}
+            aria-label="Back to Landing"
+          >
+            <FaArrowLeft className="minc-back-icon" />
+            <div className="minc-back-label">Back</div>
+          </div>
+
           <h1 className="auth-title">MinC Portal Login</h1>
           <p className="auth-sub">Sign in with your MINC ID (no spaces) or Email*</p>
 
@@ -436,11 +465,7 @@ const handleSubmitPassword = async (e) => {
             </form>
           )}
 
-          <div style={{ textAlign: "center", marginTop: 14 }}>
-            <Link to="/" className="link-ghost">
-              Back to Landing
-            </Link>
-          </div>
+
         </div>
       </div>
     </>

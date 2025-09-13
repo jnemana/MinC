@@ -1,4 +1,6 @@
 # minc_login_password/__init__.py
+# V1.1
+
 import json
 import logging
 from datetime import datetime, timezone
@@ -100,7 +102,6 @@ def run(req: func.HttpRequest) -> func.HttpResponse:
         # 4) Success — clear failures; ensure status active
         reset_failures(user)
         user["status"] = "active"
-        user["lastLoginAt"] = datetime.now(timezone.utc).isoformat()
         cont.replace_item(user, user)
 
         return _json({
