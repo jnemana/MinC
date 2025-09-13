@@ -137,6 +137,8 @@ export default function MinCLoginPage() {
       setUser({
         mincId: data.mincId,
         email: data.email,
+        displayName: data.displayName,
+        roles: Array.isArray(data.roles) ? data.roles : [],
         failedAttempts: data.failedLoginCount ?? 0,
         lockoutUntil: data.lockoutUntil ?? null,
       });

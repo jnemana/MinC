@@ -101,6 +101,8 @@ def run(req: func.HttpRequest) -> func.HttpResponse:
                 "success": True,
                 "mincId": user.get("mincId"),
                 "email": user.get("email"),
+                "displayName": user.get("displayName") or user.get("firstName"),
+                "roles": user.get("roles", []),
                 "failedLoginCount": int(user.get("failedLoginCount", 0)),
                 "lockoutUntil": user.get("lockoutUntil"),
             },

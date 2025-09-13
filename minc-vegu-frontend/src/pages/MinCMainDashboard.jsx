@@ -1,4 +1,5 @@
-// src/pages/MinCMainDashboard.jsx
+// src/pages/MinCMainDashboard.jsx v1.1
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MMSLogo from "../assets/MMS_Logo.png";
@@ -8,11 +9,19 @@ import "../styles/MinCDashboard.css";
 export default function MinCMainDashboard() {
   const nav = useNavigate();
   const [showDialog, setShowDialog] = useState(false);
+  const rawUser = sessionStorage.getItem("mincUser");
+  const user = rawUser ? JSON.parse(rawUser) : null;
 
   return (
     <div className="minc-page">
       <div className="minc-dashboard-card">
         <h1 className="minc-title">MinC Main Dashboard</h1>
+        {user && (
+  <div className="minc-user-info">
+    <div className="minc-user-name">{user.displayName}</div>
+    <div className="minc-user-roles">{(user.roles || []).join(", ")}</div>
+  </div>
+)}
         <div className="minc-brand-grid">
           {/* MMS Card */}
           <div
