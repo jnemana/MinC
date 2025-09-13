@@ -1,3 +1,21 @@
+/* src/styles/MinCGlobal.css */
+
+/* ========= Brand tokens ========= */
+:root{
+  /* Colors */
+  --brand-orange: #F1663D;      /* borders */
+  --brand-dark-green: #1B5228;  /* headings, accents */
+  --brand-light-green: #E8F5E9; /* backgrounds/cards */
+  --brand-yellow: #F5EE1F;      /* primary buttons */
+
+  /* Typography */
+  --font-heading: "Orbitron", sans-serif;
+  --font-ui: "Exo 2", sans-serif;
+
+  /* Effects */
+  --ring: 3px solid rgba(27,82,40,.55);
+}
+
 /* Global reset + prevent horizontal scroll */
 *,
 *::before,

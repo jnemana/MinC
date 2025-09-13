@@ -11,9 +11,8 @@ export default function MinCMainDashboard() {
 
   return (
     <div className="minc-page">
-      <div>
+      <div className="minc-dashboard-card">
         <h1 className="minc-title">MinC Main Dashboard</h1>
-
         <div className="minc-brand-grid">
           {/* MMS Card */}
           <div
@@ -38,10 +37,20 @@ export default function MinCMainDashboard() {
       {/* Simple modal for MMS */}
       {showDialog && (
         <div className="minc-modal-backdrop" onClick={() => setShowDialog(false)}>
-          <div className="minc-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Heads up</h3>
-            <p>This feature is coming soon.</p>
-            <button onClick={() => setShowDialog(false)}>OK</button>
+          <div
+            className="minc-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mms-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="mms-modal-title" className="minc-modal-title">Heads up</h3>
+            <p className="minc-modal-text">This feature is coming soon.</p>
+            <div className="minc-modal-actions">
+              <button className="btn btn-primary" onClick={() => setShowDialog(false)}>
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}

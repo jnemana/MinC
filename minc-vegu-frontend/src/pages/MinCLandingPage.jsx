@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../styles/MinCGlobal.css";
 import "../styles/MinCSpinner.css";
 import mincLogo from '../assets/minc-logo.png';
@@ -13,8 +13,7 @@ function MinCLandingPage() {
     document.title = "Welcome to MinC Portal";
   }, []);
 
-  const goLogin = (e) => {
-    e.preventDefault();
+  const goLogin = () => {
     setLoading(true);
     navigate("/login");
   };
@@ -26,8 +25,12 @@ function MinCLandingPage() {
         <div className="landing-card">
           <img src={mincLogo} alt="MinC Logo" className="landing-logo" />
           <div className="btn-row">
-            <a href="/login" onClick={goLogin} className="btn btn-primary">LOGIN</a>
-            <a href="/contact" className="btn btn-ghost">Contact Support</a>
+            <Link to="/login" onClick={goLogin} className="btn btn-primary" role="button">
+              LOGIN
+            </Link>
+            <Link to="/contact" className="btn btn-ghost" role="button">
+              Contact Support
+            </Link>
           </div>
         </div>
       </div>
