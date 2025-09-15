@@ -42,6 +42,7 @@
 .minc-brand-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(0,0,0,.10);
+  background: #fffef2;
 }
 
 /* The logo itself — the important part */
