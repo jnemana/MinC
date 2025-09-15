@@ -55,7 +55,7 @@ function App() {
         
         {/* Protected routes */}
         <Route path="/dashboard" element={<RequireAuth><MinCMainDashboard /></RequireAuth>} />
-        <Route path="/vegu" element={<RequireAuth><MinCVeguDashboard /></RequireAuth>} />
+        <Route path="/minc-vegu-dashboard" element={<RequireAuth><MinCVeguDashboard /></RequireAuth>} />
 
       </Routes>
     </Router>

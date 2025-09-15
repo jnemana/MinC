@@ -1,0 +1,105 @@
+/* src/styles/MinCVeguDashboard.css  (v1.2) */
+/* Brand: Orange #F1663D, DarkGreen #1B5228, LightGreen #E8F5E9, Yellow #F5EE1F */
+
+.vegu-page {
+  min-height: 100vh;
+  background: #e8f2ea;                /* site bg (light) */
+  display: grid;
+  place-items: center;
+}
+
+.vegu-card {
+  width: min(1100px, 96vw);
+  margin-inline: auto;
+  background: #E8F5E9;                /* card bg */
+  border: 3px solid #F1663D;          /* orange border */
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.08);
+  padding: 28px 22px 24px;
+  position: relative;
+}
+
+.vegu-title {
+  font-family: "Orbitron", sans-serif;
+  color: #1B5228;                     /* dark green */
+  text-align: center;
+  font-size: clamp(26px, 2.8vw, 42px);
+  margin: 8px 0 16px;
+  letter-spacing: .5px;
+}
+
+.vegu-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 720px) {
+  .vegu-kpi-grid { grid-template-columns: 1fr; }
+}
+
+.vegu-kpi {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 14px;
+  align-items: center;
+  background: #E8F4F9;
+  border: 2px solid #ffb300;          /* subtle amber frame */
+  border-radius: 18px;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+}
+
+.vegu-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+  background: #fffef2;
+}
+
+.vegu-kpi:active { transform: translateY(0); }
+
+.vegu-kpi-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: #F5EE1F;                /* yellow badge */
+  border: 2px solid #F1663D;          /* orange ring */
+  border-radius: 16px;
+}
+
+.vegu-kpi-icon svg {
+  width: 34px;
+  height: 34px;
+  fill: #1B5228;                      /* dark green */
+}
+
+.vegu-kpi-meta {
+  display: grid;
+  align-items: center;
+}
+
+.vegu-kpi-count {
+  font-family: "Orbitron", sans-serif;
+  color: #1B5228;
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.vegu-kpi-label {
+  color: #214236;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.vegu-kpi-icon img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin: 0 auto;          /* centers inside the yellow badge */
+}
+
