@@ -10,3 +10,5 @@ import minc_login_init          # noqa: F401
 import minc_login_password      # noqa: F401
 import minc_send_email_otp      # noqa: F401
 import minc_verify_email_otp    # noqa: F401
+import vegu_institutions_search  # noqa: F401
+import vegu_institutions_get     # noqa: F401
