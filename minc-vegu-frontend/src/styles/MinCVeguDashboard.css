@@ -103,3 +103,138 @@
   margin: 0 auto;          /* centers inside the yellow badge */
 }
 
+/* --- Back & Logout inside the vegu-card --- */
+
+.minc-back-container,
+.minc-logout-container {
+  position: absolute;
+  top: 10px;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  user-select: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.minc-back-container { left: 12px; }
+.minc-logout-container { right: 12px; }
+
+.minc-back-icon,
+.minc-logout-icon {
+  font-size: 22px;
+  color: #F1663D; /* MinC Orange */
+}
+
+.minc-back-label,
+.minc-logout-label {
+  font-size: 12px;
+  color: #6b7280; /* neutral gray */
+}
+
+.minc-back-container:focus,
+.minc-logout-container:focus {
+  outline: 2px solid rgba(241,102,61,0.45);
+  outline-offset: 2px;
+}
+
+/* keep a little top space for the title so it doesn't collide with the icons */
+.vegu-title { margin-top: 22px; }
+
+/* ===== Slim Action Cards (Option A) ===== */
+
+.vegu-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.10);
+  background: #fffef2;
+  border-color: #6d7a86;               /* hover ring */
+}
+
+.vegu-action:focus-visible {
+  outline: 3px solid rgba(73, 110, 249, .6); /* focus ring */
+  outline-offset: 2px;
+}
+
+/* Icon badge */
+.vegu-action-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  background: #F5EE1F;                 /* yellow badge */
+  border: 2px solid #F1663D;           /* orange ring */
+  border-radius: 14px;
+}
+
+.vegu-action-icon img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+/* Text stack */
+
+.vegu-action-title {
+  font-weight: 800;
+  color: #1B5228;                      /* brand dark green */
+  letter-spacing: .2px;
+}
+
+.vegu-action-desc {
+  font-size: .98rem;
+  line-height: 1.25;
+  color: #214236;
+  opacity: .9;
+  font-family: "Exo 2", sans-serif;
+}
+
+/* Optional “slim selected” halo (for future multi-item state) */
+.vegu-action.selected {
+  border-color: #6b7cff;
+  box-shadow: 0 0 0 3px rgba(107, 124, 255, .18);
+}
+
+/* Keep responsive friendly spacing */
+@media (min-width: 920px) {
+  .vegu-actions { gap: 16px; }
+}
+
+/* Slim menu list for Institutions */
+.minc-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.minc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #E8F4F9;
+  border: 2px solid #F1663D;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-family: "Exo 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1B5228;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.minc-menu-item:hover {
+  background: #fffef2;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.minc-menu-icon {
+  font-size: 1.25rem; /* emoji/icon size */
+}
+
+.minc-menu-label {
+  flex: 1;
+}
