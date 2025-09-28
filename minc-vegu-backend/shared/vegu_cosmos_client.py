@@ -143,7 +143,8 @@ def update_institution_fields(vg_id: str, patch: Dict[str, Any]) -> Dict[str, An
         "name","address1","address2","city","state","postal_code","country",
         "complaint_email","complaint_phone","country_code","timezone",
         "status","plan_type","subscription_expiry","institution_type","institution_category",
-        "personnel_name","comment","admin_notes","max_responders","testing","last_updated","updated_at"
+        "personnel_name","comment","admin_notes","max_responders","testing","last_updated","updated_at",
+        "primary_contact_name","primary_contact_phone","primary_contact_email", "website_url",
     }
 
     cont = institutions_container()
