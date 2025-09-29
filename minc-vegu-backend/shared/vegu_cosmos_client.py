@@ -1,5 +1,4 @@
-# shared/vegu_cosmos_client.py v1.3
-# MinC → VEGU Cosmos access (scoped, least-privilege)
+# shared/vegu_cosmos_client.py v1.4
 
 from __future__ import annotations
 import os
@@ -181,3 +180,138 @@ def institution_name_exists(name: str) -> bool:
     params = [{"name":"@name","value":name}]
     count = next(iter(cont.query_items(query=q, parameters=params, enable_cross_partition_query=True)), 0)
     return int(count) > 0
+
+# --- RESPONDERS HELPERS ---
+
+def _responders_container():
+    # Reuse your existing Cosmos client / database accessors.
+    # If you have get_container(name), prefer that:
+    return get_container("responders")
+
+def search_responders(q: str, limit: int = 25):
+    """
+    Cross-partition search over vg_id, email, first/middle/last name, institution_name.
+    Case-insensitive contains match. Returns list of docs (trim in caller if needed).
+    """
+    c = _responders_container()
+    qn = q.strip().lower()
+    if not qn:
+        return []
+
+    query = """
+    SELECT TOP @limit c.vg_id, c.email, c.firstName, c.middleName, c.lastName,
+                      c.institution_name, c.institution_id, c.status, c.country
+    FROM c
+    WHERE CONTAINS(LOWER(c.vg_id), @q)
+       OR CONTAINS(LOWER(c.email), @q)
+       OR CONTAINS(LOWER(c.firstName), @q)
+       OR CONTAINS(LOWER(c.middleName), @q)
+       OR CONTAINS(LOWER(c.lastName), @q)
+       OR CONTAINS(LOWER(c.institution_name), @q)
+    """
+    params = [
+        {"name": "@q", "value": qn},
+        {"name": "@limit", "value": int(limit or 25)},
+    ]
+    it = c.query_items(
+        query=query,
+        parameters=params,
+        enable_cross_partition_query=True,
+    )
+    return list(it)
+
+def get_responder_by_vg_id(vg_id: str):
+    """
+    Cross-partition lookup because PK is /institution_id.
+    Returns the full doc or None.
+    """
+    c = _responders_container()
+    query = "SELECT * FROM c WHERE c.vg_id = @vg"
+    params = [{"name": "@vg", "value": vg_id}]
+    it = c.query_items(
+        query=query,
+        parameters=params,
+        enable_cross_partition_query=True,
+        max_item_count=1
+    )
+    items = list(it)
+    return items[0] if items else None
+
+def update_responder_fields(vg_id: str, patch: dict, expected_etag: str = None):
+    """
+    Apply a partial update by reading the current doc (to get PK), merging fields,
+    setting updated_at (caller already set), and doing a conditional replace with ETag.
+    Raises:
+        ValueError if not found
+        PermissionError on ETag mismatch (precondition failed)
+    """
+    c = _responders_container()
+    current = get_responder_by_vg_id(vg_id)
+    if not current:
+        raise ValueError("Responder not found")
+
+    # Partition key:
+    pk = current.get("institution_id")
+    if not pk:
+        raise ValueError("Responder missing partition key (institution_id)")
+
+    # Merge allowed fields (caller already filtered)
+    updated = dict(current)
+    for k, v in (patch or {}).items():
+        updated[k] = v
+
+    # Conditional replace using If-None-Match / access_conditions
+    try:
+        # For azure-cosmos>=4.x:
+        from azure.cosmos import PartitionKey
+        # conditional ETag match
+        resp = c.replace_item(
+            item=current["id"],
+            body=updated,
+            # Conditional header:
+            headers={"If-Match": expected_etag} if expected_etag else None,
+            partition_key=pk
+        )
+        return resp
+    except Exception as e:
+        # Azure Cosmos raises when precondition fails; detect ETag mismatch
+        msg = str(e).lower()
+        if "precondition" in msg or "etag" in msg:
+            raise PermissionError("etag mismatch")
+        raise
+
+def _env(name: str, default=None):
+    return os.getenv(name, default)
+
+def _resolve_cosmos():
+    uri = (
+        _env("VEGU_COSMOS_URI")
+        or _env("COSMOS_URI")
+        or _env("COSMOS_URL")
+    )
+    key = _env("VEGU_COSMOS_KEY") or _env("COSMOS_KEY")
+    db_name = (
+        _env("VEGU_DB_NAME")
+        or _env("VEGU_COSMOS_DB")
+        or _env("COSMOS_DB")
+        or "vegu3-main"
+    )
+    if not uri or not key:
+        raise RuntimeError("Cosmos credentials missing: VEGU_COSMOS_URI/COSMOS_URI and VEGU_COSMOS_KEY/COSMOS_KEY are required.")
+    client = CosmosClient(uri, credential=key)
+    db = client.get_database_client(db_name)
+    return client, db
+
+# --- Canonical exports used by our Functions ---
+
+def get_vegu_client():
+    """Return (client, db) for VEGU Cosmos."""
+    return _resolve_cosmos()
+
+def get_vegu_db():
+    """Return db for VEGU Cosmos."""
+    return _resolve_cosmos()[1]
+
+def get_client():
+    """Return client (legacy/compat)."""
+    return _resolve_cosmos()[0]

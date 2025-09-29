@@ -13,3 +13,6 @@ import minc_verify_email_otp    # noqa: F401
 import vegu_institutions_search  # noqa: F401
 import vegu_institutions_get     # noqa: F401
 import vegu_institutions_update  # noqa: F401
+import vegu_responders_search   # noqa: F401
+import vegu_responders_get      # noqa: F401
+import vegu_responders_update   # noqa: F401
