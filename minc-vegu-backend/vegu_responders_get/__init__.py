@@ -6,6 +6,7 @@ import azure.functions as func
 from function_app import app
 from shared.auth import http_auth_level
 from shared.vegu_cosmos_client import get_responder_by_vg_id
+from shared.normalizers import normalize_responder
 
 def _resp(obj, status=200):
     return func.HttpResponse(
@@ -62,7 +63,7 @@ def run(req: func.HttpRequest) -> func.HttpResponse:
             return _resp({"success": False, "error": "Responder not found"}, 404)
 
         etag = doc.get("_etag")
-        responder = _normalize(doc)
+        responder = normalize_responder(doc)
         return _resp({"success": True, "responder": responder, "etag": etag}, 200)
     except Exception as e:
         logging.exception("vegu_responders_get failed")

@@ -272,8 +272,9 @@ export default function MinCVEGUResponderUpdate() {
         return;
       }
 
-      setResponder(json.responder);
-      seedDraft(json.responder);
+      const r = normalizeResponder(json.responder);
+      setResponder(r);
+      seedDraft(r);
       setEtag(json.etag || "");
       setNewNote("");
       setEditMode(false);
@@ -447,13 +448,34 @@ export default function MinCVEGUResponderUpdate() {
             style={{
               maxWidth: 980,
               margin: "12px auto 0",
-              background: "#E8F4F9",
-              border: "2px solid #ffb300",
+              background: editMode ? "#FFFDF1" : "#E8F4F9",        // warmer bg when editing
+              border: `2px solid ${editMode ? "#f59e0b" : "#ffb300"}`,
               borderRadius: 16,
               padding: 16,
               boxShadow: "0 6px 20px rgba(0,0,0,.08)",
             }}
           >
+
+            {editMode && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 10,
+                  background: "#FFF5DD",
+                  border: "1px solid #f59e0b",
+                  color: "#92400e",
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  fontWeight: 700,
+                }}
+              >
+                <span aria-hidden="true">🔒</span>
+                Editing responder (read-only fields are locked)
+              </div>
+            )}
+
 <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px,1fr))", gap:12 }}>
   {/* identity / read-only */}
   <Field label="VG Responder ID" value={responder.vg_id} readOnly />
@@ -472,11 +494,11 @@ export default function MinCVEGUResponderUpdate() {
   <RWSelect edit={editMode} label="Status"      value={draft?.status     || ""} onChange={(v)=>updateDraft("status", v)} options={STATUS_OPTIONS} />
 
   {/* times (use the camelCase fields produced by normalizeResponder) */}
-  <Field label="Local Created At"   value={formatLocalTs(responder.localCreatedAt, responder.timezone)} />
-  <Field label="Created At (UTC)"   value={formatLocalTs(responder.createdAt, "UTC")} />
-  <Field label="Last Login"         value={formatLocalTs(responder.lastLogin, responder.timezone)} />
+  <Field label="Local Created At"   value={formatLocalTs(responder.localCreatedAt, responder.timezone)} readOnly/>
+  <Field label="Created At (UTC)"   value={formatLocalTs(responder.createdAt, "UTC")} readOnly/>
+  <Field label="Last Login"         value={formatLocalTs(responder.lastLogin, responder.timezone)} readOnly/>
   <Field label="Reset Locked Until" value={formatLocalTs(responder.resetLockedUntil, responder.timezone)} />
-  <Field label="Updated At"         value={formatLocalTs(responder.updatedAt, responder.timezone)} />
+  <Field label="Updated At"         value={formatLocalTs(responder.updatedAt, responder.timezone)} readOnly/>
 </div>
 
             {/* Admin notes */}

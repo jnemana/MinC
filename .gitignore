@@ -33,3 +33,4 @@ minc-vegu-frontend/.env*
 minc-vegu-frontend/src/utils/config.js
 minc-vegu-backend/local-settings-params.txt
 Summaries/
+minc-vegu-backend/.venv312/

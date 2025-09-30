@@ -3,7 +3,8 @@
 from __future__ import annotations
 import os
 from typing import Any, Dict, List, Optional, Tuple
-from azure.cosmos import CosmosClient, exceptions
+from azure.cosmos import CosmosClient
+from azure.cosmos import exceptions as cosmos_exceptions
 from azure.cosmos.exceptions import CosmosHttpResponseError
 try:
     # azure-cosmos relies on this enum from azure-core
@@ -232,55 +233,69 @@ def search_responders(q: str, limit: int = 25):
     return list(it)
 
 def get_responder_by_vg_id(vg_id: str) -> Optional[Dict[str, Any]]:
-    """
-    Look up by vg_id (or id) using a cross-partition query.
-    This avoids assuming a particular partition key.
-    """
-    c = get_responders_container()
+    c = _responders_container()
+    # Try point read (fast) using vg_id as both id and PK (if that matches your data layout)
+    try:
+        return c.read_item(item=vg_id, partition_key=vg_id)
+    except Exception:
+        pass
+
+    # Fallback: cross-partition query
     q = "SELECT TOP 1 * FROM c WHERE c.vg_id = @id OR c.id = @id"
-    params = [{"name": "@id", "value": vg_id}]
-    items = list(c.query_items(query=q, parameters=params, enable_cross_partition_query=True))
+    items = list(c.query_items(
+        query=q,
+        parameters=[{"name": "@id", "value": vg_id}],
+        enable_cross_partition_query=True
+    ))
     return items[0] if items else None
 
-def update_responder_fields(vg_id: str, patch: dict, expected_etag: Optional[str] = None):
-    c = get_responders_container()
+def update_responder_fields(vg_id: str, patch: dict, expected_etag: str | None = None):
+    """
+    Read -> validate -> merge -> replace.
+    - Enforces optimistic concurrency by comparing ETag in Python (no SDK headers).
+    - Lets SDK infer the partition key from the body (we keep institution_id unchanged).
+    """
+    c = _responders_container()
+
     current = get_responder_by_vg_id(vg_id)
     if not current:
         raise ValueError("Responder not found")
 
+    # PK is institution_id and must remain the same
     pk = current.get("institution_id")
     if not pk:
         raise ValueError("Responder missing partition key (institution_id)")
 
+    # Concurrency check (app-level)
+    if expected_etag and current.get("_etag") != expected_etag:
+        # Mirror the FE 409 flow without relying on SDK match headers
+        raise PermissionError("etag mismatch")
+
+    # Merge only the fields you allow FE to change
+    allowed = {
+        "firstName","middleName","lastName",
+        "phone","country","department","status",
+        "admin_notes"
+    }
     updated = dict(current)
     for k, v in (patch or {}).items():
-        updated[k] = v
+        if k in allowed:
+            updated[k] = v
 
-    try:
-        if expected_etag:
-            if _HAS_MATCH_COND:
-                return c.replace_item(
-                    item=current["id"],
-                    body=updated,
-                    partition_key=pk,
-                    etag=expected_etag,
-                    match_condition=MatchConditions.IfNotModified,
-                )
-            else:
-                # Fallback: use explicit header
-                return c.replace_item(
-                    item=current["id"],
-                    body=updated,
-                    partition_key=pk,
-                    headers={"If-Match": expected_etag},
-                )
-        else:
-            return c.replace_item(item=current["id"], body=updated, partition_key=pk)
-    except exceptions.CosmosHttpResponseError as e:
-        msg = str(e).lower()
-        if "precondition" in msg or "etag" in msg or "if-match" in msg:
-            raise PermissionError("etag mismatch")
-        raise
+    # DO NOT touch created_at/last_login/etc. BE is the source of truth.
+    # We also don't need to set updated_at here if you prefer FE to display _ts;
+    # but if you do want an app-level stamp:
+    # from datetime import datetime, timezone
+    # updated["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    # Critical: keep id, vg_id, and institution_id unchanged
+    updated["id"] = current["id"]
+    updated["vg_id"] = current.get("vg_id", current["id"])
+    updated["institution_id"] = pk
+
+    # Replace without extra kwargs. SDK will infer partition key from body.
+    return c.replace_item(item=current["id"], body=updated)
+    
         
 def _env(name: str, default=None):
     return os.getenv(name, default)

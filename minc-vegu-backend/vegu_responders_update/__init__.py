@@ -1,4 +1,4 @@
-# vegu_responders_update/__init__.py  v1.5
+# vegu_responders_update/__init__.py  v1.4
 
 import json
 import logging
@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 import azure.functions as func
 from function_app import app
 from shared.auth import http_auth_level
+from shared.normalizers import normalize_responder
 from shared.vegu_cosmos_client import (
     get_responder_by_vg_id,
     update_responder_fields,
@@ -124,4 +125,11 @@ def run(req: func.HttpRequest) -> func.HttpResponse:
     for f in ("_rid", "_self", "_attachments"):
         updated.pop(f, None)
 
-    return _resp({"success": True, "responder": updated, "etag": etag}, 200)
+    return _resp(
+    {
+        "success": True,
+        "responder": normalize_responder(updated),
+        "etag": updated.get("_etag")
+    },
+    200
+)
