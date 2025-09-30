@@ -3,13 +3,24 @@
 from __future__ import annotations
 import os
 from typing import Any, Dict, List, Optional, Tuple
-from azure.cosmos import CosmosClient
+from azure.cosmos import CosmosClient, exceptions
 from azure.cosmos.exceptions import CosmosHttpResponseError
-
+try:
+    # azure-cosmos relies on this enum from azure-core
+    from azure.core import MatchConditions
+    _HAS_MATCH_COND = True
+except Exception:
+    MatchConditions = None
+    _HAS_MATCH_COND = False
+    
 # ---- ENV (MinC) ----
 VEGU_COSMOS_URI = os.getenv("VEGU_COSMOS_URI")
 VEGU_COSMOS_KEY = os.getenv("VEGU_COSMOS_KEY")
 VEGU_COSMOS_DB  = os.getenv("VEGU_COSMOS_DB", "vegu3-main")
+COSMOS_URI  = os.getenv("COSMOS_URI")
+COSMOS_KEY  = os.getenv("COSMOS_KEY")
+DB_NAME     = os.getenv("VEGU_COSMOS_DB", "vegu3-main")
+RESPONDERS  = os.getenv("VEGU_CONTAINER_RESPONDERS", "responders")
 
 # Containers we will touch from MinC
 CN_INSTITUTIONS = "institutions"
@@ -220,66 +231,57 @@ def search_responders(q: str, limit: int = 25):
     )
     return list(it)
 
-def get_responder_by_vg_id(vg_id: str):
+def get_responder_by_vg_id(vg_id: str) -> Optional[Dict[str, Any]]:
     """
-    Cross-partition lookup because PK is /institution_id.
-    Returns the full doc or None.
+    Look up by vg_id (or id) using a cross-partition query.
+    This avoids assuming a particular partition key.
     """
-    c = _responders_container()
-    query = "SELECT * FROM c WHERE c.vg_id = @vg"
-    params = [{"name": "@vg", "value": vg_id}]
-    it = c.query_items(
-        query=query,
-        parameters=params,
-        enable_cross_partition_query=True,
-        max_item_count=1
-    )
-    items = list(it)
+    c = get_responders_container()
+    q = "SELECT TOP 1 * FROM c WHERE c.vg_id = @id OR c.id = @id"
+    params = [{"name": "@id", "value": vg_id}]
+    items = list(c.query_items(query=q, parameters=params, enable_cross_partition_query=True))
     return items[0] if items else None
 
-def update_responder_fields(vg_id: str, patch: dict, expected_etag: str = None):
-    """
-    Apply a partial update by reading the current doc (to get PK), merging fields,
-    setting updated_at (caller already set), and doing a conditional replace with ETag.
-    Raises:
-        ValueError if not found
-        PermissionError on ETag mismatch (precondition failed)
-    """
-    c = _responders_container()
+def update_responder_fields(vg_id: str, patch: dict, expected_etag: Optional[str] = None):
+    c = get_responders_container()
     current = get_responder_by_vg_id(vg_id)
     if not current:
         raise ValueError("Responder not found")
 
-    # Partition key:
     pk = current.get("institution_id")
     if not pk:
         raise ValueError("Responder missing partition key (institution_id)")
 
-    # Merge allowed fields (caller already filtered)
     updated = dict(current)
     for k, v in (patch or {}).items():
         updated[k] = v
 
-    # Conditional replace using If-None-Match / access_conditions
     try:
-        # For azure-cosmos>=4.x:
-        from azure.cosmos import PartitionKey
-        # conditional ETag match
-        resp = c.replace_item(
-            item=current["id"],
-            body=updated,
-            # Conditional header:
-            headers={"If-Match": expected_etag} if expected_etag else None,
-            partition_key=pk
-        )
-        return resp
-    except Exception as e:
-        # Azure Cosmos raises when precondition fails; detect ETag mismatch
+        if expected_etag:
+            if _HAS_MATCH_COND:
+                return c.replace_item(
+                    item=current["id"],
+                    body=updated,
+                    partition_key=pk,
+                    etag=expected_etag,
+                    match_condition=MatchConditions.IfNotModified,
+                )
+            else:
+                # Fallback: use explicit header
+                return c.replace_item(
+                    item=current["id"],
+                    body=updated,
+                    partition_key=pk,
+                    headers={"If-Match": expected_etag},
+                )
+        else:
+            return c.replace_item(item=current["id"], body=updated, partition_key=pk)
+    except exceptions.CosmosHttpResponseError as e:
         msg = str(e).lower()
-        if "precondition" in msg or "etag" in msg:
+        if "precondition" in msg or "etag" in msg or "if-match" in msg:
             raise PermissionError("etag mismatch")
         raise
-
+        
 def _env(name: str, default=None):
     return os.getenv(name, default)
 
@@ -315,3 +317,31 @@ def get_vegu_db():
 def get_client():
     """Return client (legacy/compat)."""
     return _resolve_cosmos()[0]
+
+def get_container(name: str):
+    """Generic container getter using the canonical VEGU cosmos resolution."""
+    _, db = _resolve_cosmos()
+    return db.get_container_client(name)
+
+def get_responders_container():
+    """Public, consistent name used by functions."""
+    return get_container(RESPONDERS or "responders")
+
+def search_responders(q: str, limit: int = 25):
+    c = get_responders_container()
+    qn = (q or "").strip().lower()
+    if not qn:
+        return []
+    query = """
+      SELECT TOP @limit c.vg_id, c.email, c.firstName, c.middleName, c.lastName,
+                        c.institution_name, c.institution_id, c.status, c.country
+      FROM c
+      WHERE CONTAINS(LOWER(c.vg_id), @q)
+         OR CONTAINS(LOWER(c.email), @q)
+         OR CONTAINS(LOWER(c.firstName), @q)
+         OR CONTAINS(LOWER(c.middleName), @q)
+         OR CONTAINS(LOWER(c.lastName), @q)
+         OR CONTAINS(LOWER(c.institution_name), @q)
+    """
+    params = [{"name": "@q", "value": qn}, {"name": "@limit", "value": int(limit or 25)}]
+    return list(c.query_items(query=query, parameters=params, enable_cross_partition_query=True))

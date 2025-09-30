@@ -57,6 +57,8 @@ function formatTsTZ(input, tz) {
   }
 }
 
+const formatLocalTs = (val, tz) => formatTsTZ(val, tz);
+
 const formatNowLocal = () => {
   const parts = new Intl.DateTimeFormat(undefined, {
     year:"numeric",month:"2-digit",day:"2-digit",
@@ -155,9 +157,10 @@ export default function MinCVEGUResponderUpdate() {
       const urlGet = makeUrl(`${CONFIG.PATHS.VEGU_RESP_GET}/${encodeURIComponent(id)}`);
       let { res, json } = await debugFetch("vegu-responders-get", urlGet);
       if (res.ok && json?.success && json?.responder) {
-        setResponder(json.responder);
-        seedDraft(json.responder);
-        setEtag(json.etag || "");
+        const r = normalizeResponder(json.responder);
+  setResponder(r);
+  seedDraft(r);
+  setEtag(json.etag || "");
         return;
       }
       // fallback: search and take first
@@ -451,30 +454,30 @@ export default function MinCVEGUResponderUpdate() {
               boxShadow: "0 6px 20px rgba(0,0,0,.08)",
             }}
           >
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px,1fr))", gap:12 }}>
-              {/* read-only essentials */}
-              <Field label="VG Responder ID" value={responder.vg_id} readOnly={editMode} />
-              <Field label="Email" value={responder.email} readOnly={editMode} />
-              <Field label="Institution Name" value={responder.institution_name} readOnly={editMode} />
-              <Field label="Institution ID" value={responder.institution_id} readOnly={editMode} />
-              <Field label="Timezone" value={responder.timezone} readOnly={editMode} />
+<div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px,1fr))", gap:12 }}>
+  {/* identity / read-only */}
+  <Field label="VG Responder ID" value={responder.vg_id} readOnly />
+  <Field label="Email" value={responder.email} readOnly />
+  <Field label="Institution Name" value={responder.institution_name} readOnly />
+  <Field label="Institution ID" value={responder.institution_id} readOnly />
+  <Field label="Timezone" value={responder.timezone} readOnly />
 
-              {/* editable */}
-              <RWField  edit={editMode} label="First Name"  value={draft?.firstName || ""} onChange={(v)=>updateDraft("firstName", v)} />
-              <RWField  edit={editMode} label="Middle Name" value={draft?.middleName || ""} onChange={(v)=>updateDraft("middleName", v)} />
-              <RWField  edit={editMode} label="Last Name"   value={draft?.lastName || ""} onChange={(v)=>updateDraft("lastName", v)} />
-              <RWField  edit={editMode} label="Phone"       value={draft?.phone || ""} onChange={(v)=>updateDraft("phone", v)} />
-              <RWField  edit={editMode} label="Country"     value={draft?.country || ""} onChange={(v)=>updateDraft("country", v)} />
-              <RWField  edit={editMode} label="Department"  value={draft?.department || ""} onChange={(v)=>updateDraft("department", v)} />
-              <RWSelect edit={editMode} label="Status"      value={draft?.status || ""} onChange={(v)=>updateDraft("status", v)} options={STATUS_OPTIONS} />
+  {/* editable */}
+  <RWField  edit={editMode} label="First Name"  value={draft?.firstName  || ""} onChange={(v)=>updateDraft("firstName", v)} />
+  <RWField  edit={editMode} label="Middle Name" value={draft?.middleName || ""} onChange={(v)=>updateDraft("middleName", v)} />
+  <RWField  edit={editMode} label="Last Name"   value={draft?.lastName   || ""} onChange={(v)=>updateDraft("lastName", v)} />
+  <RWField  edit={editMode} label="Phone"       value={draft?.phone      || ""} onChange={(v)=>updateDraft("phone", v)} />
+  <RWField  edit={editMode} label="Country"     value={draft?.country    || ""} onChange={(v)=>updateDraft("country", v)} />
+  <RWField  edit={editMode} label="Department"  value={draft?.department || ""} onChange={(v)=>updateDraft("department", v)} />
+  <RWSelect edit={editMode} label="Status"      value={draft?.status     || ""} onChange={(v)=>updateDraft("status", v)} options={STATUS_OPTIONS} />
 
-              {/* times (rendered in responder's timezone) */}
-              <Field label="Local Created At" value={formatTsTZ(responder.local_created_at, responder.timezone)} />
-              <Field label="Created At (UTC)" value={formatTsTZ(responder.created_at, responder.timezone)} />
-              <Field label="Last Login" value={formatTsTZ(responder.last_login, responder.timezone)} />
-              <Field label="Reset Locked Until" value={formatTsTZ(responder.reset_locked_until, responder.timezone)} />
-              <Field label="Updated At" value={formatTsTZ(responder.updated_at ?? responder._ts, responder.timezone)} />
-            </div>
+  {/* times (use the camelCase fields produced by normalizeResponder) */}
+  <Field label="Local Created At"   value={formatLocalTs(responder.localCreatedAt, responder.timezone)} />
+  <Field label="Created At (UTC)"   value={formatLocalTs(responder.createdAt, "UTC")} />
+  <Field label="Last Login"         value={formatLocalTs(responder.lastLogin, responder.timezone)} />
+  <Field label="Reset Locked Until" value={formatLocalTs(responder.resetLockedUntil, responder.timezone)} />
+  <Field label="Updated At"         value={formatLocalTs(responder.updatedAt, responder.timezone)} />
+</div>
 
             {/* Admin notes */}
             {!editMode && responder?.admin_notes && (
@@ -675,6 +678,43 @@ function SelectRow({ label, value, onChange, options=[] }) {
 function RWField({ edit, label, value, onChange, placeholder }) {
   return edit ? <InputRow label={label} value={value} onChange={onChange} placeholder={placeholder} /> : <Field label={label} value={value} />;
 }
+
 function RWSelect({ edit, label, value, onChange, options }) {
   return edit ? <SelectRow label={label} value={value} onChange={onChange} options={options} /> : <Field label={label} value={value} />;
+}
+
+function normalizeResponder(d = {}) {
+  return {
+    // ids (keep as-is; JSX uses these names)
+    vg_id: d.vg_id || d.id || "",
+    email: d.email || "",
+
+    // institution (your JSX uses snake_case for these two, so keep them)
+    institution_name: d.institution_name || d.institutionName || "",
+    institution_id:   d.institution_id   || d.institutionId   || "",
+
+    // editable names – camelCase (matches JSX & EDITABLE_FIELDS)
+    firstName:  d.firstName  ?? d.first_name  ?? "",
+    middleName: d.middleName ?? d.middle_name ?? "",
+    lastName:   d.lastName   ?? d.last_name   ?? "",
+
+    // other editable fields (camelCase where JSX expects it)
+    phone:      d.phone      ?? "",
+    country:    d.country    ?? "",
+    department: d.department ?? "",
+    status:     d.status     ?? "",
+
+    // read-only
+    timezone: d.timezone ?? "",
+
+    // times normalized to camelCase that JSX will use below
+    localCreatedAt:     d.local_created_at     ?? d.localCreatedAt     ?? "",
+    createdAt:          d.created_at           ?? d.createdAt          ?? "",
+    lastLogin:          d.last_login           ?? d.lastLogin          ?? "",
+    resetLockedUntil:   d.reset_locked_until   ?? d.resetLockedUntil   ?? null,
+
+    // notes & updated stamp
+    admin_notes: d.admin_notes ?? d.adminNotes ?? "",
+    updatedAt:   d.updated_at  ?? d.updatedAt  ?? d._ts ?? null,
+  };
 }
