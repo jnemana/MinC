@@ -1,4 +1,4 @@
-// src/pages/MinCVeguDashboard.jsx v1.3
+// src/pages/MinCVeguDashboard.jsx v1.4
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,8 +9,11 @@ import userLogo from "../assets/minc-users.png";
 import responderLogo from "../assets/minc-responders.png";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
+import UsePageTitle from "../utils/UsePageTitle";
 
 export default function MinCVeguDashboard() {
+  UsePageTitle("MinC VEGU Dashboard");
+
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);

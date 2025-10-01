@@ -7,6 +7,8 @@ import MinCRegisterPage from "./pages/MinCRegisterPage";
 import MinCContactSupportPage from "./pages/MinCContactSupportPage";
 import MinCVeguInstitutionsDashboard from "./pages/MinCVEGUInstitutionsDashboard";
 import MinCVEGUInstitutionUpdate from "./pages/MinCVEGUInstitutionUpdate";
+import MinCVEGURespondersDashboard from "./pages/MinCVEGURespondersDashboard";
+import MinCVEGUResponderUpdate from "./pages/MinCVEGUResponderUpdate";
 
 function getSessionUser() {
   try {
@@ -60,6 +62,8 @@ function App() {
         <Route path="/minc-vegu-dashboard" element={<RequireAuth><MinCVeguDashboard /></RequireAuth>} />
         <Route path="/vegu/institutions" element={<RequireAuth><MinCVeguInstitutionsDashboard /></RequireAuth>} />
         <Route path="/vegu/institutions/update" element={<RequireAuth><MinCVEGUInstitutionUpdate /></RequireAuth>} />
+        <Route path="/vegu/responders" element={<MinCVEGURespondersDashboard />} />
+        <Route path="/vegu/responders/update" element={<MinCVEGUResponderUpdate />} />
       </Routes>
     </Router>
   );

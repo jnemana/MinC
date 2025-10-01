@@ -1,4 +1,4 @@
-// src/pages/MinCVEGUInstitutionsDashboard.jsx  v1.4
+// src/pages/MinCVEGURespondersDashboard.jsx  v1.4 
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,18 +6,17 @@ import "../styles/MinCVeguDashboard.css";  // grid + slim actions + back/logout
 import "../styles/MinCDashboard.css";      // modal styles
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
-import instLogo from "../assets/minc-workplaces.png";
+import responderLogo from "../assets/minc-responders.png";
 import UsePageTitle from "../utils/UsePageTitle";
 
-
-export default function MinCVeguInstitutionsDashboard() {
-  UsePageTitle("MinC VEGU Institution Actions");
+export default function MinCVEGURespondersDashboard() {
   
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // session guard
+  UsePageTitle("MinC VEGU Responder Actions");
+
   useEffect(() => {
     const u = sessionStorage.getItem("mincUser");
     if (!u) nav("/login", { replace: true });
@@ -34,17 +33,17 @@ export default function MinCVeguInstitutionsDashboard() {
 
       <div className="vegu-card">
         {/* Back (inside card, top-left) */}
-<div
-  className="minc-back-container"
-  role="button"
-  tabIndex={0}
-  onClick={() => nav("/minc-vegu-dashboard")}
-  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && nav("/minc-vegu-dashboard")}
-  aria-label="Back to MinC VEGU Main Dashboard"
->
-  <FaArrowLeft className="minc-back-icon" />
-  <div className="minc-back-label">Back</div>
-</div>
+        <div
+          className="minc-back-container"
+          role="button"
+          tabIndex={0}
+          onClick={() => nav("/minc-vegu-dashboard")}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && nav("/minc-vegu-dashboard")}
+          aria-label="Back to MinC VEGU Main Dashboard"
+        >
+          <FaArrowLeft className="minc-back-icon" />
+          <div className="minc-back-label">Back</div>
+        </div>
 
         {/* Logout (inside card, top-right) */}
         <div
@@ -59,17 +58,17 @@ export default function MinCVeguInstitutionsDashboard() {
           <div className="minc-logout-label">Logout</div>
         </div>
 
-        <h1 className="vegu-title">Institutions Actions</h1>
+        <h1 className="vegu-title">Responders Actions</h1>
 
         {/* Slim action cards */}
 <div className="minc-menu-list">
   <button
     className="minc-menu-item"
-    onClick={() => go("/vegu/institutions/update")}
-    aria-label="Update Institution"
+    onClick={() => go("/vegu/responders/update")}
+    aria-label="Update Responder"
   >
-    <span className="minc-menu-icon">🏢</span>
-    <span className="minc-menu-label">Update Institution</span>
+    <span className="minc-menu-icon">👥</span>
+    <span className="minc-menu-label">Update Responder</span>
   </button>
 </div>
       </div>
