@@ -1,4 +1,4 @@
-// src/pages/MinCMainDashboard.jsx v1.1
+// src/pages/MinCMainDashboard.jsx v1.4
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -6,8 +6,11 @@ import { FaSignOutAlt } from "react-icons/fa";
 import MMSLogo from "../assets/MMS_Logo.png";
 import VEGULogo from "../assets/VEGU_Logo.png";
 import "../styles/MinCDashboard.css";
+import UsePageTitle from "../utils/UsePageTitle";
 
 export default function MinCMainDashboard() {
+  UsePageTitle("MinC Main Dashboard");
+  
   const nav = useNavigate();
   const [showDialog, setShowDialog] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);

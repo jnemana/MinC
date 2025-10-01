@@ -1,17 +1,19 @@
+//src/pages/MinCLandingPage.jsx 1.4
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import "../styles/MinCGlobal.css";
 import "../styles/MinCSpinner.css";
 import mincLogo from '../assets/minc-logo.png';
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
+import UsePageTitle from "../utils/UsePageTitle";
+
 
 function MinCLandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    document.title = "Welcome to MinC Portal";
-  }, []);
+UsePageTitle("Welcome to MinC Portal");
 
   const goLogin = () => {
     setLoading(true);

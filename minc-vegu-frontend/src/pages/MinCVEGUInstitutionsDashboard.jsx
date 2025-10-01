@@ -1,9 +1,4 @@
-// src/pages/MinCVEGUInstitutionsDashboard.jsx  v1.3 (slim actions)
-
-// MinC → VEGU → Institutions (landing page with slim action cards)
-// Routes:
-//   • /vegu/institutions              (this page)
-//   • /vegu/institutions/update       (next step page — to be implemented)
+// src/pages/MinCVEGUInstitutionsDashboard.jsx  v1.4
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +7,12 @@ import "../styles/MinCDashboard.css";      // modal styles
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
 import instLogo from "../assets/minc-workplaces.png";
+import UsePageTitle from "../utils/UsePageTitle";
+
 
 export default function MinCVeguInstitutionsDashboard() {
+  UsePageTitle("MinC VEGU Institution Actions");
+  
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);

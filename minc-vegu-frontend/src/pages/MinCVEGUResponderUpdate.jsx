@@ -7,6 +7,9 @@ import "../styles/MinCDashboard.css";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSearch } from "react-icons/fa";
 import { CONFIG } from "../utils/config";
+import { UNSAFE_NavigationContext } from "react-router-dom";
+import UsePageTitle from "../utils/UsePageTitle";
+
 
 // ---------- helpers ----------
 const debugFetch = async (label, url, init = {}) => {
@@ -109,6 +112,35 @@ export default function MinCVEGUResponderUpdate() {
   const [saveError, setSaveError] = useState("");
   const [showDiscard, setShowDiscard] = useState(false);
 
+  const pendingActionRef = useRef(null);
+
+  UsePageTitle("MinC VEGU Responder Update");
+
+  const buildPatch = () => {
+    if (!responder || !draft) return {};
+    const p = {};
+    for (const k of EDITABLE_FIELDS) {
+      if (draft[k] !== responder[k]) p[k] = draft[k];
+    }
+    return p;
+  };
+
+  // define hasUnsavedChanges BEFORE using it
+  function hasUnsavedChanges() {
+    const p = buildPatch();
+    return Object.keys(p).length > 0;
+  }
+  const dirty = editMode && (hasUnsavedChanges() || Boolean(newNote.trim()));
+
+  useBlockNavigation(
+  dirty,
+  (proceed) => {
+    // stash the pending nav (e.g., browser back) and open your modal
+    pendingActionRef.current = proceed;
+    setShowDiscard(true);
+  }
+);
+
   // session guard
   useEffect(() => {
     const u = sessionStorage.getItem("mincUser");
@@ -146,6 +178,17 @@ export default function MinCVEGUResponderUpdate() {
     return () => clearTimeout(t);
   }, [query, isLikelyResponderId]);
 
+useEffect(() => {
+  const handler = (e) => {
+    if (!editMode) return;
+    if (!(hasUnsavedChanges() || newNote.trim())) return;
+    e.preventDefault();
+    e.returnValue = "";
+  };
+  window.addEventListener("beforeunload", handler);
+  return () => window.removeEventListener("beforeunload", handler);
+}, [editMode, newNote, responder, draft]); 
+
   const seedDraft = (doc) => setDraft(doc ? { ...doc } : null);
 
   const lookupById = async (id) => {
@@ -182,57 +225,77 @@ export default function MinCVEGUResponderUpdate() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e?.preventDefault?.();
-    setError("");
-    const q = query.trim();
-    if (!q) { setError("Please enter a Responder ID/email/keywords."); return; }
+function confirmOr(proceedFn) {
+  const dirty = hasUnsavedChanges() || Boolean(newNote.trim());
+  if (!editMode || !dirty) { proceedFn?.(); return Promise.resolve(true); }
+  pendingActionRef.current = proceedFn;
+  setShowDiscard(true);
+  return Promise.resolve(false);
+}
 
-    if (isLikelyResponderId) {
-      await lookupById(q);
-      return;
-    }
+function useBlockNavigation(when, onAttempt) {
+  const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
-    // if we already have results, use them; otherwise do a quick search
-    let list = results;
-    if (!list || list.length === 0) {
-      try {
-        setSearching(true);
-        const url = makeUrl(CONFIG.PATHS.VEGU_RESP_SEARCH, `?q=${encodeURIComponent(q)}`);
-        const { res, json } = await debugFetch("vegu-responders-search", url);
-        if (res.ok && json.success === true) list = json.items || [];
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setSearching(false);
-      }
-    }
-    if (list && list.length > 0) {
-      await lookupById(list[0].vg_id || list[0].id);
-    } else {
-      setError("No matches. Try different keywords or a full VG Responder ID.");
-    }
-  };
+  React.useEffect(() => {
+    if (!when) return;
+    if (!navigator || typeof navigator.block !== "function") return;
 
-  const pickResult = async (r) => {
+    // block any navigation (links, useNavigate, browser back/forward)
+    const unblock = navigator.block((tx) => {
+      // tx.retry() will perform the blocked navigation
+      onAttempt(() => {
+        unblock();   // stop blocking, then retry the nav
+        tx.retry();
+      });
+    });
+
+    return unblock;
+  }, [when, navigator, onAttempt]);
+}
+
+const handleSubmit = async (e) => {
+  e?.preventDefault?.();
+  setError("");
+
+  const q = query.trim();
+  if (!q) { setError("Please enter a Responder ID/email/keywords."); return; }
+
+  if (isLikelyResponderId) {
+    await confirmOr(() => lookupById(q));
+    return;
+  }
+
+  // (no confirmOr here until we actually replace the loaded record)
+  let list = results;
+  if (!list || list.length === 0) {
+    try {
+      setSearching(true);
+      const url = makeUrl(CONFIG.PATHS.VEGU_RESP_SEARCH, `?q=${encodeURIComponent(q)}`);
+      const { res, json } = await debugFetch("vegu-responders-search", url);
+      if (res.ok && json.success === true) list = json.items || [];
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSearching(false);
+    }
+  }
+  if (list && list.length > 0) {
+    await confirmOr(() => lookupById(list[0].vg_id || list[0].id));
+  } else {
+    setError("No matches. Try different keywords or a full VG Responder ID.");
+  }
+};
+
+const pickResult = async (r) => {
+  await confirmOr(async () => {
     const id = r.vg_id || r.id;
     setQuery(id);
     await lookupById(id);
     setResults([]);
-  };
+  });
+};
 
   const updateDraft = (k, v) => setDraft(d => ({ ...(d || {}), [k]: v }));
-
-  const buildPatch = () => {
-    if (!responder || !draft) return {};
-    const p = {};
-    for (const k of EDITABLE_FIELDS) {
-      if (draft[k] !== responder[k]) p[k] = draft[k];
-    }
-    return p;
-  };
-
-  const hasUnsavedChanges = () => Object.keys(buildPatch()).length > 0;
 
   const handleSave = async () => {
     setSaveError("");
@@ -292,6 +355,7 @@ export default function MinCVEGUResponderUpdate() {
     return s.split("\n").map(t => t.trim()).filter(Boolean).reverse();
   }, [responder?.admin_notes]);
 
+
   // ---------- UI ----------
   return (
     <div className="vegu-page">
@@ -303,8 +367,8 @@ export default function MinCVEGUResponderUpdate() {
           className="minc-back-container"
           role="button"
           tabIndex={0}
-          onClick={() => nav("/vegu/responders")}
-          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && nav("/vegu/responders")}
+          onClick={() => confirmOr(() => nav("/vegu/responders"))}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && confirmOr(() => nav("/vegu/responders"))}
           aria-label="Back to Responders Dashboard"
         >
           <FaArrowLeft className="minc-back-icon" />
@@ -613,6 +677,9 @@ export default function MinCVEGUResponderUpdate() {
                   seedDraft(responder);
                   setNewNote("");
                   setSaveError("");
+                  const run = pendingActionRef.current;
+                  pendingActionRef.current = null;
+                  run && run();
                 }}
                 className="btn"
                 style={{ padding:"10px 16px", borderRadius:10, border:"2px solid #F1663D", background:"#F5EE1F", color:"#1B5228", fontWeight:800 }}

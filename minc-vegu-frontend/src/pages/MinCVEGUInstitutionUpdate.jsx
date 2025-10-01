@@ -1,4 +1,4 @@
-// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.3
+// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.4
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,7 @@ import "../styles/MinCDashboard.css";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSearch } from "react-icons/fa";
 import { CONFIG } from "../utils/config";
+import UsePageTitle from "../utils/UsePageTitle";
 
 const debugFetch = async (label, url, init = {}) => {
   console.log(`➡️ ${label} REQ`, url, init);
@@ -111,6 +112,8 @@ const makeUrl = (path, qs = "") => {
 };
 
 export default function MinCVEGUInstitutionUpdate() {
+  UsePageTitle("MinC VEGU Institution Update");
+  
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);

@@ -1,4 +1,4 @@
-// src/pages/MinCVEGURespondersDashboard.jsx  v1.4 (slim actions)
+// src/pages/MinCVEGURespondersDashboard.jsx  v1.4 
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +7,15 @@ import "../styles/MinCDashboard.css";      // modal styles
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
 import responderLogo from "../assets/minc-responders.png";
+import UsePageTitle from "../utils/UsePageTitle";
 
 export default function MinCVEGURespondersDashboard() {
+  
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  UsePageTitle("MinC VEGU Responder Actions");
 
   useEffect(() => {
     const u = sessionStorage.getItem("mincUser");
