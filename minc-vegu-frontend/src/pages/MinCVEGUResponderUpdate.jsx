@@ -31,14 +31,26 @@ const makeUrl = (path, qs = "") => {
   return url;
 };
 
+function coerceUTC(input) {
+  if (typeof input !== "string") return input;
+  let s = input.trim();
+  // ".... UTC" → "...Z"
+  if (/ UTC$/i.test(s)) s = s.replace(/ UTC$/i, "Z");
+  // If it has no "Z" or timezone offset, assume it's UTC
+  if (!/[zZ]|[+-]\d{2}:?\d{2}$/.test(s)) s = s + "Z";
+  return s;
+}
+
 // time formatting in responder's timezone
 function formatTsTZ(input, tz) {
   if (input === null || input === undefined || input === "") return "—";
   let d;
   try {
-    // allow epoch seconds
-    if (typeof input === "number") d = new Date(input * 1000);
-    else d = new Date(input);
+    if (typeof input === "number") {
+      d = new Date(input * 1000);          // epoch seconds path
+    } else {
+      d = new Date(coerceUTC(input));      // <<< important line
+    }
     if (Number.isNaN(d.getTime())) return String(input);
 
     const parts = new Intl.DateTimeFormat(undefined, {
@@ -86,7 +98,7 @@ const STATUS_OPTIONS = ["active","pending","suspended","locked","expired"];
 // Only these are editable on this screen
 const EDITABLE_FIELDS = new Set([
   "firstName","middleName","lastName",
-  "phone","country","department","status"
+  "phone","country","department","status", "resetLockedUntil"
   // admin_notes is handled specially; updated_at is set on BE
 ]);
 
@@ -312,6 +324,12 @@ const pickResult = async (r) => {
     const stamp = `[${formatNowLocal()}] ${getSessionUserLabel()}: ${newNote.trim()}`;
     patch.admin_notes = (responder.admin_notes ? `${responder.admin_notes}\n` : "") + stamp;
 
+   // Translate camel → snake for BE. Accept full datetime ("YYYY-MM-DDTHH:MM[:SS]") or date-only.
+   if (typeof patch.resetLockedUntil === "string") {
+     patch.reset_locked_until = ensureSeconds(patch.resetLockedUntil); // interpret as responder TZ on BE
+     delete patch.resetLockedUntil;
+   }
+    
     setSaving(true);
     try {
       const url = makeUrl(CONFIG.PATHS.VEGU_RESP_UPDATE);
@@ -561,7 +579,23 @@ const pickResult = async (r) => {
   <Field label="Local Created At"   value={formatLocalTs(responder.localCreatedAt, responder.timezone)} readOnly/>
   <Field label="Created At (UTC)"   value={formatLocalTs(responder.createdAt, "UTC")} readOnly/>
   <Field label="Last Login"         value={formatLocalTs(responder.lastLogin, responder.timezone)} readOnly/>
-  <Field label="Reset Locked Until" value={formatLocalTs(responder.resetLockedUntil, responder.timezone)} />
+  
+ <RWDateTime
+   edit={editMode}
+   label="Reset Locked Until"
+   tz={responder.timezone}
+   // In edit mode: prefer the draft string; otherwise derive from responder value in responder TZ
+   value={
+     editMode
+       ? (typeof draft?.resetLockedUntil === "string" && draft.resetLockedUntil
+            ? draft.resetLockedUntil
+            : formatDateTimeLocalInTZ(responder.resetLockedUntil, responder.timezone))
+       : formatLocalTs(responder.resetLockedUntil, responder.timezone)
+   }
+   previousDisplay={formatLocalTs(responder.resetLockedUntil, responder.timezone)}
+   onChange={(v) => updateDraft("resetLockedUntil", ensureSeconds(v))}
+ />
+  
   <Field label="Updated At"         value={formatLocalTs(responder.updatedAt, responder.timezone)} readOnly/>
 </div>
 
@@ -772,6 +806,45 @@ function RWSelect({ edit, label, value, onChange, options }) {
   return edit ? <SelectRow label={label} value={value} onChange={onChange} options={options} /> : <Field label={label} value={value} />;
 }
 
+function RWDate({ edit, label, value, onChange, tz }) {
+  if (!edit) return <Field label={label} value={value} readOnly />;
+
+  return (
+    <div style={{ background:"#fff", border:"1px solid #cbd5e1", borderRadius:10, padding:"10px 12px" }}>
+      <div style={{ fontSize:12, color:"#475569", marginBottom:4 }}>{label}</div>
+      <input
+        type="date"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)} // YYYY-MM-DD (local admin’s UI); BE will expand in responder TZ
+        style={{ width:"100%", border:"1px solid #cbd5e1", borderRadius:8, padding:"8px 10px", fontFamily:"'Exo 2', sans-serif" }}
+      />
+      <div style={{ fontSize:11, color:"#64748b", marginTop:6 }}>
+        Will lock until <strong>23:59:59</strong> on the selected date ({tz || "local TZ"}).
+      </div>
+    </div>
+  );
+}
+
+function RWDateTime({ edit, label, value, onChange, tz, previousDisplay }) {
+  if (!edit) return <Field label={label} value={value} readOnly />;
+
+  return (
+    <div style={{ background:"#fff", border:"1px solid #cbd5e1", borderRadius:10, padding:"10px 12px" }}>
+      <div style={{ fontSize:12, color:"#475569", marginBottom:4 }}>{label}</div>
+      <input
+        type="datetime-local"
+        step="1"                 // seconds
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)} // "YYYY-MM-DDTHH:MM[:SS]"
+        style={{ width:"100%", border:"1px solid #cbd5e1", borderRadius:8, padding:"8px 10px", fontFamily:"'Exo 2', sans-serif" }}
+      />
+      <div style={{ fontSize:11, color:"#64748b", marginTop:6 }}>
+        Currently Locked Until: <em>{previousDisplay}</em>
+      </div>
+    </div>
+  );
+}
+
 function normalizeResponder(d = {}) {
   return {
     // ids (keep as-is; JSX uses these names)
@@ -804,6 +877,47 @@ function normalizeResponder(d = {}) {
 
     // notes & updated stamp
     admin_notes: d.admin_notes ?? d.adminNotes ?? "",
-    updatedAt:   d.updated_at  ?? d.updatedAt  ?? d._ts ?? null,
+    updatedAt:   d.updated_at || d.updatedAt || null,
   };
+}
+
+// get YYYY-MM-DD from a timestamp in a specific IANA TZ
+function dateOnlyInTZ(input, tz) {
+  if (!input) return "";
+  try {
+    const d = typeof input === "number" ? new Date(input * 1000) : new Date(input);
+    if (Number.isNaN(d.getTime())) return "";
+    const parts = new Intl.DateTimeFormat(undefined, {
+      timeZone: tz || undefined,
+      year: "numeric", month: "2-digit", day: "2-digit"
+    }).formatToParts(d);
+    const get = (t) => parts.find(p => p.type === t)?.value || "";
+    return `${get("year")}-${get("month")}-${get("day")}`;
+  } catch { return ""; }
+}
+
+// "YYYY-MM-DDTHH:MM:SS" in responder's TZ, for <input type="datetime-local">
+function formatDateTimeLocalInTZ(input, tz) {
+  if (!input) return "";
+  try {
+    const d = typeof input === "number" ? new Date(input * 1000) : new Date(input);
+    if (Number.isNaN(d.getTime())) return "";
+    const parts = new Intl.DateTimeFormat(undefined, {
+      timeZone: tz || undefined,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false
+    }).formatToParts(d);
+    const get = (t) => parts.find(p => p.type === t)?.value || "";
+    return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}:${get("second")}`;
+  } catch { return ""; }
+}
+
+// If browser returns "YYYY-MM-DDTHH:mm", force seconds ":00".
+// If date-only somehow sneaks through, keep your old end-of-day rule.
+function ensureSeconds(s) {
+  if (!s) return s;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(s)) return s + ":00";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s + "T23:59:59";
+  return s;
 }

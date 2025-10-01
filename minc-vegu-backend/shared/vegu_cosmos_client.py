@@ -275,7 +275,7 @@ def update_responder_fields(vg_id: str, patch: dict, expected_etag: str | None =
     allowed = {
         "firstName","middleName","lastName",
         "phone","country","department","status",
-        "admin_notes"
+        "admin_notes", "updated_at", "reset_locked_until"
     }
     updated = dict(current)
     for k, v in (patch or {}).items():
