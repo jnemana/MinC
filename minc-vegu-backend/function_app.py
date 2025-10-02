@@ -22,3 +22,4 @@ import vegu_users_update   # noqa: F401
 import vegu_complaints_search  # noqa: F401
 import vegu_complaints_get     # noqa: F401
 import vegu_messages_thread        # noqa: F401
+import vegu_reveal_user  # noqa: F401

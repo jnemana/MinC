@@ -1,15 +1,12 @@
-// src/pages/MinCVEGUComplaintsDashboard.jsx  v1.6 (F44)
+// src/pages/MinCVEGUComplaintsDashboard.jsx  v1.7 (F45)
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/MinCVeguDashboard.css";
-import "../styles/MinCDashboard.css";
+import "../styles/MinCVeguDashboard.css";  // grid + slim actions + back/logout
+import "../styles/MinCDashboard.css";      // modal styles
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
-import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
+import { FaArrowLeft, FaSignOutAlt, FaComments, FaUserSecret } from "react-icons/fa";
 import UsePageTitle from "../utils/UsePageTitle";
-
-// If you later add an image like assets/minc-complaints.png, you can import it and
-// swap it into the <img> below. For now we’ll use the 💬 emoji icon.
 
 export default function MinCVEGUComplaintsDashboard() {
   const nav = useNavigate();
@@ -33,7 +30,7 @@ export default function MinCVEGUComplaintsDashboard() {
       <MinCSpinnerOverlay open={loading} />
 
       <div className="vegu-card">
-        {/* Back → MinC VEGU Main Dashboard (same as Users/Responders) */}
+        {/* Back (inside card, top-left) */}
         <div
           className="minc-back-container"
           role="button"
@@ -46,7 +43,7 @@ export default function MinCVEGUComplaintsDashboard() {
           <div className="minc-back-label">Back</div>
         </div>
 
-        {/* Logout (same placement & modal as Users) */}
+        {/* Logout (inside card, top-right) */}
         <div
           className="minc-logout-container"
           role="button"
@@ -59,19 +56,32 @@ export default function MinCVEGUComplaintsDashboard() {
           <div className="minc-logout-label">Logout</div>
         </div>
 
-        <h1 className="vegu-title">Complaints Actions</h1>
+        <h1 className="vegu-title">Complaint Actions</h1>
 
-        {/* Slim action cards (match Users page styling) */}
+        {/* Slim action cards */}
         <div className="minc-menu-list">
+          {/* View Complaint */}
           <button
             className="minc-menu-item"
             onClick={() => go("/vegu/complaints/review")}
             aria-label="View Complaint"
           >
-            <span className="minc-menu-icon" aria-hidden="true" style={{ fontSize: 24, lineHeight: 1 }}>
-              💬
+            <span className="minc-menu-icon">
+              <FaComments size={26} />
             </span>
             <span className="minc-menu-label">View Complaint</span>
+          </button>
+
+          {/* NEW: Reveal User (maps complaint → user via vgcrypt) */}
+          <button
+            className="minc-menu-item"
+            onClick={() => go("/vegu/complaints/reveal")}
+            aria-label="Reveal User for Complaint"
+          >
+            <span className="minc-menu-icon">
+              <FaUserSecret size={26} />
+            </span>
+            <span className="minc-menu-label">Reveal User</span>
           </button>
         </div>
       </div>

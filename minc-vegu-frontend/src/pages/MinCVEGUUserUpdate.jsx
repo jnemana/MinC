@@ -1,7 +1,7 @@
-// src/pages/MinCVEGUUserUpdate.jsx  v1.5 (F43)
+// src/pages/MinCVEGUUserUpdate.jsx  v1.7
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, UNSAFE_NavigationContext } from "react-router-dom";
+import { useNavigate, useParams, UNSAFE_NavigationContext } from "react-router-dom";
 import "../styles/MinCVeguDashboard.css";
 import "../styles/MinCDashboard.css";
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
@@ -115,6 +115,27 @@ export default function MinCVEGUUserUpdate() {
   const [showDiscard, setShowDiscard] = useState(false);
 
   const pendingActionRef = useRef(null);
+
+  const { vg_id: vgParam } = useParams();
+
+useEffect(() => {
+  // If you landed here with /vegu/users/update/:vg_id,
+  // fetch that user and jump straight to the edit view.
+  (async () => {
+    if (!vgParam) return;
+
+    const id = String(vgParam).trim();
+    if (!/^VG\d{6,}$/i.test(id)) {
+      setErr("Invalid user ID in URL.");
+      setMode("search");
+      return;
+    }
+
+    setQuery(id);
+    await lookupById(id);
+  })();
+}, [vgParam]);
+
 
   // session guard
   useEffect(() => {
@@ -410,6 +431,8 @@ export default function MinCVEGUUserUpdate() {
           >
             <FaSearch /> {isLikelyUserId ? "Lookup" : "Search"}
           </button>
+
+
 
           {/* Typeahead */}
           {!isLikelyUserId && (results.length > 0 || searching) && (

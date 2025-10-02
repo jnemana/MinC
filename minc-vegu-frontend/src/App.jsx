@@ -15,7 +15,7 @@ import MinCVEGUUsersDashboard from "./pages/MinCVEGUUsersDashboard";
 import MinCVEGUUserUpdate from "./pages/MinCVEGUUserUpdate";
 import MinCVEGUComplaintsDashboard from "./pages/MinCVEGUComplaintsDashboard";
 import MinCVEGUComplaintReview from "./pages/MinCVEGUComplaintReview";
-
+import MinCVEGURevealUser from "./pages/MinCVEGURevealUser";
 
 
 function getSessionUser() {
@@ -73,10 +73,11 @@ function App() {
         <Route path="/vegu/responders" element={<MinCVEGURespondersDashboard />} />
         <Route path="/vegu/responders/update" element={<MinCVEGUResponderUpdate />} />
         <Route path="/vegu/users" element={<MinCVEGUUsersDashboard />} />
-        <Route path="/vegu/users/update" element={<MinCVEGUUserUpdate />} />
+        <Route path="/vegu/users/update/:vg_id?" element={<MinCVEGUUserUpdate />} />
         <Route path="/vegu/complaints" element={<MinCVEGUComplaintsDashboard />} />
         <Route path="/vegu/complaints/review" element={<MinCVEGUComplaintReview />} />
         <Route path="/vegu/complaints/review/:vg_id" element={<MinCVEGUComplaintReview />} />
+	<Route path="/vegu/complaints/reveal" element={<MinCVEGURevealUser />} />
       </Routes>
     </Router>
   );
