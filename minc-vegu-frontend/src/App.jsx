@@ -1,4 +1,4 @@
-// src/App.jsx 1.5
+// src/App.jsx 1.6
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MinCMainDashboard from "./pages/MinCMainDashboard";
@@ -13,6 +13,10 @@ import MinCVEGURespondersDashboard from "./pages/MinCVEGURespondersDashboard";
 import MinCVEGUResponderUpdate from "./pages/MinCVEGUResponderUpdate";
 import MinCVEGUUsersDashboard from "./pages/MinCVEGUUsersDashboard";
 import MinCVEGUUserUpdate from "./pages/MinCVEGUUserUpdate";
+import MinCVEGUComplaintsDashboard from "./pages/MinCVEGUComplaintsDashboard";
+import MinCVEGUComplaintReview from "./pages/MinCVEGUComplaintReview";
+
+
 
 function getSessionUser() {
   try {
@@ -70,6 +74,9 @@ function App() {
         <Route path="/vegu/responders/update" element={<MinCVEGUResponderUpdate />} />
         <Route path="/vegu/users" element={<MinCVEGUUsersDashboard />} />
         <Route path="/vegu/users/update" element={<MinCVEGUUserUpdate />} />
+        <Route path="/vegu/complaints" element={<MinCVEGUComplaintsDashboard />} />
+        <Route path="/vegu/complaints/review" element={<MinCVEGUComplaintReview />} />
+        <Route path="/vegu/complaints/review/:vg_id" element={<MinCVEGUComplaintReview />} />
       </Routes>
     </Router>
   );
