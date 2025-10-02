@@ -1,4 +1,4 @@
-# shared/vegu_cosmos_client.py v1.4
+# shared/vegu_cosmos_client.py v1.5
 
 from __future__ import annotations
 import os
@@ -6,6 +6,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from azure.cosmos import CosmosClient
 from azure.cosmos import exceptions as cosmos_exceptions
 from azure.cosmos.exceptions import CosmosHttpResponseError
+from typing import Dict
+
+_client = None
+_db = None
+_containers: Dict[str, object] = {}
+
 try:
     # azure-cosmos relies on this enum from azure-core
     from azure.core import MatchConditions
@@ -25,6 +31,8 @@ RESPONDERS  = os.getenv("VEGU_CONTAINER_RESPONDERS", "responders")
 
 # Containers we will touch from MinC
 CN_INSTITUTIONS = "institutions"
+CN_RESPONDERS     = os.getenv("VEGU_CONTAINER_RESPONDERS", "responders")
+CN_USERS          = os.getenv("VEGU_USERS_CONTAINER", "user-profiles")
 
 # ----- client helpers -----
 def _client() -> CosmosClient:
@@ -360,3 +368,30 @@ def search_responders(q: str, limit: int = 25):
     """
     params = [{"name": "@q", "value": qn}, {"name": "@limit", "value": int(limit or 25)}]
     return list(c.query_items(query=query, parameters=params, enable_cross_partition_query=True))
+
+def _get_client():
+    global _client
+    if _client:
+        return _client
+    url = os.environ["COSMOS_DB_URL"]
+    key = os.environ["COSMOS_DB_KEY"]
+    _client = CosmosClient(url, credential=key)
+    return _client
+
+def _get_db():
+    global _db
+    if _db:
+        return _db
+    db_name = os.environ.get("COSMOS_DB_NAME", "vegu3-main")
+    _db = _get_client().get_database_client(db_name)
+    return _db
+
+# ===== Users helpers (VEGU only) =====
+def get_user_container():
+    """
+    VEGU Users container.
+    DB: VEGU_COSMOS_DB (default 'vegu3-main')
+    Container: VEGU_USERS_CONTAINER (default 'user-profiles')
+    PK: /id (value == vg_id)
+    """
+    return get_container(CN_USERS)

@@ -16,3 +16,6 @@ import vegu_institutions_update  # noqa: F401
 import vegu_responders_search   # noqa: F401
 import vegu_responders_get      # noqa: F401
 import vegu_responders_update   # noqa: F401
+import vegu_users_search   # noqa: F401
+import vegu_users_get      # noqa: F401
+import vegu_users_update   # noqa: F401
