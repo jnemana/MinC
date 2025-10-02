@@ -1,4 +1,4 @@
-//src/pages/MinCLandingPage.jsx 1.4
+//src/pages/MinCLandingPage.jsx 1.5
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -26,6 +26,7 @@ UsePageTitle("Welcome to MinC Portal");
       <div className="landing-wrap">
         <div className="landing-card">
           <img src={mincLogo} alt="MinC Logo" className="landing-logo" />
+                    Version 1.5
           <div className="btn-row">
             <Link to="/login" onClick={goLogin} className="btn btn-primary" role="button">
               LOGIN

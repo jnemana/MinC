@@ -1,24 +1,21 @@
-// src/pages/MinCVeguDashboard.jsx v1.5
+// src/pages/MinCVEGUUsersDashboard.jsx  v1.5 (F43)
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/MinCVeguDashboard.css";
-import "../styles/MinCDashboard.css";                  // reuse modal styles
-import instLogo from "../assets/minc-workplaces.png";
-import userLogo from "../assets/minc-users.png";
-import responderLogo from "../assets/minc-responders.png";
+import "../styles/MinCVeguDashboard.css";  // grid + slim actions + back/logout
+import "../styles/MinCDashboard.css";      // modal styles
 import MinCSpinnerOverlay from "../components/MinCSpinnerOverlay";
 import { FaArrowLeft, FaSignOutAlt } from "react-icons/fa";
+import userLogo from "../assets/minc-users.png";
 import UsePageTitle from "../utils/UsePageTitle";
 
-export default function MinCVeguDashboard() {
-  UsePageTitle("MinC VEGU Dashboard");
-
+export default function MinCVEGUUsersDashboard() {
   const nav = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // guard: if no session, bounce to login
+  UsePageTitle("MinC VEGU User Actions");
+
   useEffect(() => {
     const u = sessionStorage.getItem("mincUser");
     if (!u) nav("/login", { replace: true });
@@ -29,37 +26,25 @@ export default function MinCVeguDashboard() {
     setTimeout(() => nav(path), 150);
   };
 
-  const kpis = [
-    { key: "institutions", label: "Institutions", count: "—", onClick: () => go("/vegu/institutions"), icon: <img src={instLogo} alt="Institutions" /> },
-    { key: "users",        label: "Users",        count: "—", onClick: () => go("/vegu/users"),        icon: <img src={userLogo} alt="Users" /> },
-    { key: "complaints",   label: "Complaints",   count: "—", onClick: () => go("/vegu/complaints"),
-      icon: (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M2 3h20v14H6l-4 4zM7 8h10M7 12h7"/>
-        </svg>
-      ) },
-    { key: "responders",   label: "Responders",   count: "—", onClick: () => go("/vegu/responders"),   icon: <img src={responderLogo} alt="Responders" /> },
-  ];
-
   return (
     <div className="vegu-page">
       <MinCSpinnerOverlay open={loading} />
 
       <div className="vegu-card">
-        {/* 🔴 Back (inside card, top-left) */}
+        {/* Back (inside card, top-left) */}
         <div
           className="minc-back-container"
           role="button"
           tabIndex={0}
-          onClick={() => nav("/dashboard", { replace: true })}
-          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && nav("/dashboard", { replace: true })}
-          aria-label="Back to MinC Main Dashboard"
+          onClick={() => nav("/minc-vegu-dashboard")}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && nav("/minc-vegu-dashboard")}
+          aria-label="Back to MinC VEGU Main Dashboard"
         >
           <FaArrowLeft className="minc-back-icon" />
           <div className="minc-back-label">Back</div>
         </div>
 
-        {/* 🔴 Logout (inside card, top-right) */}
+        {/* Logout (inside card, top-right) */}
         <div
           className="minc-logout-container"
           role="button"
@@ -72,22 +57,24 @@ export default function MinCVeguDashboard() {
           <div className="minc-logout-label">Logout</div>
         </div>
 
-        <h1 className="vegu-title">MinC VEGU Main Dashboard</h1>
+        <h1 className="vegu-title">Users Actions</h1>
 
-        <div className="vegu-kpi-grid">
-          {kpis.map(({ key, label, count, onClick, icon }) => (
-            <button key={key} className="vegu-kpi" onClick={onClick} aria-label={`Open ${label}`}>
-              <div className="vegu-kpi-icon">{icon}</div>
-              <div className="vegu-kpi-meta">
-                <div className="vegu-kpi-count">{count}</div>
-                <div className="vegu-kpi-label">{label}</div>
-              </div>
-            </button>
-          ))}
+        {/* Slim action cards */}
+        <div className="minc-menu-list">
+          <button
+            className="minc-menu-item"
+            onClick={() => go("/vegu/users/update")}
+            aria-label="Update User"
+          >
+            <span className="minc-menu-icon">
+              <img src={userLogo} alt="Users" style={{ width: 28, height: 28 }} />
+            </span>
+            <span className="minc-menu-label">Update User</span>
+          </button>
         </div>
       </div>
 
-      {/* Confirm Logout modal (reuses .minc-modal styles) */}
+      {/* Confirm Logout modal */}
       {showLogoutModal && (
         <div className="minc-modal-backdrop" onClick={() => setShowLogoutModal(false)}>
           <div
