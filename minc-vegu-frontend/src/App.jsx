@@ -75,7 +75,8 @@ function App() {
         <Route path="/vegu/users" element={<MinCVEGUUsersDashboard />} />
         <Route path="/vegu/users/update" element={<MinCVEGUUserUpdate />} />
         <Route path="/vegu/complaints" element={<MinCVEGUComplaintsDashboard />} />
-<Route path="/vegu/complaints/:vg_id" element={<MinCVEGUComplaintReview />} />
+        <Route path="/vegu/complaints/review" element={<MinCVEGUComplaintReview />} />
+        <Route path="/vegu/complaints/review/:vg_id" element={<MinCVEGUComplaintReview />} />
       </Routes>
     </Router>
   );
