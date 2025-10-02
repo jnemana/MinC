@@ -19,3 +19,5 @@ import vegu_responders_update   # noqa: F401
 import vegu_users_search   # noqa: F401
 import vegu_users_get      # noqa: F401
 import vegu_users_update   # noqa: F401
+import vegu_complaints_search  # noqa: F401
+import vegu_complaints_get     # noqa: F401

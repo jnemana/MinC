@@ -1,4 +1,4 @@
-# shared/vegu_cosmos_client.py v1.5
+# shared/vegu_cosmos_client.py v1.6
 
 from __future__ import annotations
 import os
@@ -45,6 +45,7 @@ def _db():
 
 def institutions_container():
     return _db().get_container_client(CN_INSTITUTIONS)
+
 
 # ----- read helpers -----
 def institutions_count(country: Optional[str] = None) -> int:
@@ -395,3 +396,13 @@ def get_user_container():
     PK: /id (value == vg_id)
     """
     return get_container(CN_USERS)
+
+# --- Complaints & Messages containers ---
+
+def get_complaints_container():
+    name = os.getenv("VEGU_COMPLAINTS_CONTAINER", "complaints")
+    return get_container(name)
+
+def get_messages_container():
+    name = os.getenv("VEGU_MESSAGES_CONTAINER", "messages")
+    return get_container(name)
