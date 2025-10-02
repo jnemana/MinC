@@ -10,8 +10,10 @@ sendgrid==6.10.0
 # Optional: logging helper or any other libs you might be using
 pytz
 
-bcrypt==4.1.2
+bcrypt==4.1.3
 
 boto3==1.34.0
 
 openai>=1.0.0
+
+cffi>=1.17.0
