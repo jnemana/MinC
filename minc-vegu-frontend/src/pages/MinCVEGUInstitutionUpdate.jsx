@@ -1,4 +1,4 @@
-// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.4
+// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.8
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,9 @@ const debugFetch = async (label, url, init = {}) => {
 const STATUS_OPTIONS = ["active","pending","locked","expired","suspended","paymentdue"];
 const PLAN_OPTIONS   = ["free","paid","school district","enterprise","other"];
 
+// Institution Type options — simplified to match business terminology
+const INSTITUTION_TYPE_OPTIONS = ["Education", "Company"];
+
 // NOTE: institution_type values in DB can be "Education"/"Educational Institution"
 // or "Company"/"Company/Workplace". We handle both.
 const EDUCATIONAL_INSTITUTION_CATEGORY_OPTIONS = [
@@ -42,7 +45,7 @@ const EDITABLE_FIELDS = new Set([
   "address1","address2","city","state","postal_code",
   "complaint_phone",
   "primary_contact_name","primary_contact_phone","primary_contact_email",
-  "website_url","comment"
+  "website_url","comment", "institution_type"
   // NOTE: country not editable (partition key), complaint_email not editable, name not editable, institution_type read-only
 ]);
 
@@ -280,8 +283,11 @@ const notesDesc = React.useMemo(() => {
     .reverse();
 }, [inst?.admin_notes]);
 
-  // category options based on (read-only) institution_type
-  const typeKey = (inst?.institution_type || "").toLowerCase();
+ // category options depend on current selection (draft while editing)
+ const typeKey = (
+   (editMode ? draft?.institution_type : inst?.institution_type) || ""
+ ).toLowerCase();
+
   const isEdu = typeKey.startsWith("education");  // "Education" or "Educational Institution"
   const isCompany = typeKey.startsWith("company");
   const categoryOptions = isEdu
@@ -573,11 +579,28 @@ const notesDesc = React.useMemo(() => {
                   onChange={(v)=>updateDraft("_plan_detail", v)}
                   placeholder="e.g., Free for 3 months"
                 />
-              )}
+              )}{/* Institution Type */}
+{editMode ? (
+  <SelectRow
+    label="Institution Type"
+    value={draft?.institution_type || ""}
+    onChange={(v) => {
+      updateDraft("institution_type", v);
+      // Reset dependent category fields when type changes
+      updateDraft("_cat_base", "");
+      updateDraft("_cat_detail", "");
+    }}
+    options={INSTITUTION_TYPE_OPTIONS}
+  />
+) : (
+  <Field
+    label="Institution Type"
+    value={inst?.institution_type || "—"}
+    readOnly
+  />
+)}
 
-              {/* Institution Type — read-only in edit mode */}
-              <Field label="Institution Type" value={inst?.institution_type || "—"} readOnly={editMode} />
-
+  
               {/* Institution Category — context-aware + Other detail */}
               {!editMode ? (
                 <Field label="Institution Category" value={inst.institution_category} />
