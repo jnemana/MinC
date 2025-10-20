@@ -1,4 +1,4 @@
-// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.8
+// src/pages/MinCVEGUInstitutionUpdate.jsx  v1.9
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -45,7 +45,7 @@ const EDITABLE_FIELDS = new Set([
   "address1","address2","city","state","postal_code",
   "complaint_phone",
   "primary_contact_name","primary_contact_phone","primary_contact_email",
-  "website_url","comment", "institution_type"
+  "website_url","comment", "institution_type", "logo_url"
   // NOTE: country not editable (partition key), complaint_email not editable, name not editable, institution_type read-only
 ]);
 
@@ -305,7 +305,9 @@ const notesDesc = React.useMemo(() => {
 
     for (const k of EDITABLE_FIELDS) {
       if (k === "institution_category") continue; // handled below
-      if (draft[k] !== inst[k]) p[k] = draft[k];
+if (draft[k] !== inst?.[k]) {
+  p[k] = draft[k];
+}
     }
 
     // Plan: fold detail when "other"
@@ -634,6 +636,13 @@ const notesDesc = React.useMemo(() => {
               <RWField edit={editMode} label="Primary Contact Phone" value={draft?.primary_contact_phone || ""} onChange={(v)=>updateDraft("primary_contact_phone", v)} />
               <RWField edit={editMode} label="Primary Contact Email" value={draft?.primary_contact_email || ""} onChange={(v)=>updateDraft("primary_contact_email", v)} />
               <RWField edit={editMode} label="Website" value={draft?.website_url || ""} onChange={(v)=>updateDraft("website_url", v)} />
+<RWField
+  edit={editMode}
+  label="Logo URL"
+  value={draft?.logo_url || ""}
+  onChange={(v)=>updateDraft("logo_url", v)}
+  placeholder="Example: vegu.me/assets/images/vegu-logo.png"
+/>
               <RWTextArea edit={editMode} label="Institution Comments" value={draft?.comment || ""} onChange={(v)=>updateDraft("comment", v)} rows={2} />
 
               {/* read-only */}
