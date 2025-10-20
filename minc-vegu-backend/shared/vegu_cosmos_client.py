@@ -1,4 +1,4 @@
-# shared/vegu_cosmos_client.py v1.6
+# shared/vegu_cosmos_client.py v1.9
 
 from __future__ import annotations
 import os
@@ -164,7 +164,7 @@ def update_institution_fields(vg_id: str, patch: Dict[str, Any]) -> Dict[str, An
         "complaint_email","complaint_phone","country_code","timezone",
         "status","plan_type","subscription_expiry","institution_type","institution_category",
         "personnel_name","comment","admin_notes","max_responders","testing","last_updated","updated_at",
-        "primary_contact_name","primary_contact_phone","primary_contact_email", "website_url",
+        "primary_contact_name","primary_contact_phone","primary_contact_email", "website_url", "logo_url"
     }
 
     cont = institutions_container()

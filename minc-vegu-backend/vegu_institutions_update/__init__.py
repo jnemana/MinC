@@ -1,4 +1,4 @@
-# vegu_institutions_update/__init__.py  v1.3
+# vegu_institutions_update/__init__.py  v1.9
 import json
 import logging
 import azure.functions as func
@@ -19,7 +19,7 @@ ALLOWED_FIELDS = {
     "complaint_email","complaint_phone","country_code","timezone",
     "status","plan_type","subscription_expiry","institution_type","institution_category",
     "personnel_name","comment","admin_notes","max_responders","testing","updated_at",
-    "primary_contact_name","primary_contact_phone","primary_contact_email", "website_url",
+    "primary_contact_name","primary_contact_phone", "primary_contact_email", "website_url", "logo_url"
 }
 
 @app.function_name(name="vegu_institutions_update")
